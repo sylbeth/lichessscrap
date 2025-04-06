@@ -38,23 +38,38 @@ impl Crawler {
 impl Visitor for Crawler {
     type Result = ();
 
+    fn begin_game(&mut self) {
+        self.game.id += 1;
+        self.r#move.game_id += 1;
+        self.r#move.num = 0;
+    }
+
     fn header(&mut self, _key: &[u8], _value: RawHeader<'_>) {
-        self.collector.collect_header(_key);
+        //self.collector.collect_header(_key);
+        self.game.set(_key, _value.0);
         self.stats.headers += 1;
     }
 
     fn san(&mut self, _san: SanPlus) {
+        if self.r#move.num != 0 {
+            self.serializer.write_move(&self.r#move);
+            self.r#move.reset();
+        }
+        self.r#move.num += 1;
+        self.r#move.san = _san.to_string();
         self.stats.sans += 1;
     }
 
     fn nag(&mut self, _nag: Nag) {
+        self.r#move.nag = Some(_nag.0);
         self.stats.nags += 1;
     }
 
     fn comment(&mut self, _comment: RawComment<'_>) {
         let comments = CommentIterator::new(_comment.0);
         for (key, value) in comments {
-            self.collector.collect_comment(key);
+            //self.collector.collect_comment(key);
+            self.r#move.set(key, value);
         }
         self.stats.comments += 1;
     }
@@ -68,6 +83,10 @@ impl Visitor for Crawler {
     }
 
     fn end_game(&mut self) {
+        self.serializer.write_game(&self.game);
+        self.serializer.write_move(&self.r#move);
+        self.game.reset();
+        self.r#move.reset();
         self.stats.games += 1;
     }
 }

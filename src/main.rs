@@ -21,11 +21,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut crawler = Crawler::new()?;
         pgn.read_all(&mut crawler)?;
 
-        crawler.collector.print_comments();
-        println!();
+        //crawler.collector.print_comments();
+        //println!();
 
-        crawler.collector.print_headers();
-        println!();
+        //crawler.collector.print_headers();
+        //println!();
 
         print!("{}", crawler.stats);
     }

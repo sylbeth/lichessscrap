@@ -9,11 +9,14 @@ pub struct Collector {
 }
 
 impl Collector {
+    #[allow(dead_code)]
     pub fn collect_header(&mut self, header: &[u8]) {
         if !self.headers.contains(header) {
             self.headers.insert(header.to_owned());
         }
     }
+
+    #[allow(dead_code)]
     pub fn collect_comment(&mut self, comment: &[u8]) {
         if !self.comments.contains(comment) {
             self.comments.insert(comment.to_owned());
@@ -61,9 +64,15 @@ impl Collector {
         println!("\nStruct fields (Headers)\n");
 
         for different_header_str in different_str.iter() {
+            println!("    {}: String,", different_header_str.to_case(Case::Snake));
+        }
+
+        println!("\nStruct fields reset (Headers)\n");
+
+        for different_comment_str in different_str.iter() {
             println!(
-                "    {}: Option<String>,",
-                different_header_str.to_case(Case::Snake)
+                "        self.{}.clear();",
+                different_comment_str.to_case(Case::Snake)
             );
         }
     }
@@ -111,7 +120,16 @@ impl Collector {
 
         for different_comment_str in different_str.iter() {
             println!(
-                "    {}: Option<String>,",
+                "    {}: String,",
+                different_comment_str.to_case(Case::Snake)
+            );
+        }
+
+        println!("\nStruct fields reset (Comments)\n");
+
+        for different_comment_str in different_str.iter() {
+            println!(
+                "        self.{}.clear();",
                 different_comment_str.to_case(Case::Snake)
             );
         }

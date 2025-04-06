@@ -9,20 +9,27 @@ pub struct Move {
     pub num: usize,
     pub san: String,
     pub nag: Option<u8>,
-    pub clk: Option<String>,
-    pub eval: Option<String>,
+    pub clk: String,
+    pub eval: String,
 }
 
 impl Move {
+    pub fn reset(&mut self) {
+        self.san.clear();
+        self.nag = None;
+        self.clk.clear();
+        self.eval.clear();
+    }
+
     pub fn set(&mut self, key: &[u8], value: &[u8]) {
-        let value = Some(match String::from_utf8(value.to_owned()) {
+        let value = match String::from_utf8(value.to_owned()) {
             Ok(str) => str,
             Err(_) => {
                 let str = String::from_utf8_lossy(value);
                 println!("Invalid UTF-8: {} <- {:?}", str, value);
                 str.into_owned()
             }
-        });
+        };
         match key {
             CLK => self.clk = value,
             EVAL => self.eval = value,
