@@ -5,6 +5,7 @@ use pgn_reader::BufferedReader;
 use crawler::Crawler;
 
 mod collector;
+mod comment_iterator;
 mod comments;
 mod crawler;
 mod game;

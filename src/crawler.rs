@@ -52,7 +52,10 @@ impl Visitor for Crawler {
     }
 
     fn comment(&mut self, _comment: RawComment<'_>) {
-        self.collector.collect_comment(_comment.0);
+        let comments = CommentIterator::new(_comment.0);
+        for (key, value) in comments {
+            self.collector.collect_comment(key);
+        }
         self.stats.comments += 1;
     }
 

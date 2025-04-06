@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 
 use convert_case::{Case, Casing};
-use memchr::memchr_iter;
 
 #[derive(Debug, Default)]
 pub struct Collector {
@@ -16,22 +15,8 @@ impl Collector {
         }
     }
     pub fn collect_comment(&mut self, comment: &[u8]) {
-        let mut spaces = memchr_iter(b' ', comment);
-        let mut comment_found;
-        for start in memchr_iter(b'[', comment) {
-            while let Some(end) = spaces.next() {
-                if end > start {
-                    if comment[start + 1] == b'%' {
-                        comment_found = &comment[start + 2..end];
-                    } else {
-                        comment_found = &comment[start + 1..end];
-                    }
-                    if !self.comments.contains(comment_found) {
-                        self.comments.insert(comment_found.to_owned());
-                    }
-                    break;
-                }
-            }
+        if !self.comments.contains(comment) {
+            self.comments.insert(comment.to_owned());
         }
     }
 
