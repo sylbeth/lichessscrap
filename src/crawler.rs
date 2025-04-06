@@ -1,4 +1,4 @@
-use std::{error::Error, fs::File, io::Write};
+use std::{error::Error, fs::File, io::{BufWriter, Write}};
 
 use pgn_reader::{Nag, Outcome, RawComment, RawHeader, SanPlus, Visitor};
 
@@ -22,8 +22,8 @@ pub struct Crawler {
 impl Crawler {
     pub fn new() -> Result<Self, Box<dyn Error>> {
         let mut serializer = Serializer {
-            games: File::create(GAMES_CSV)?,
-            moves: File::create(MOVES_CSV)?,
+            games: BufWriter::new(File::create(GAMES_CSV)?),
+            moves: BufWriter::new(File::create(MOVES_CSV)?),
         };
         serializer.games.write("Id,Eco,Event,Opening,Result,Site,Termination,TimeControl,UtcDate,UtcTime,White,WhiteElo,WhiteRatingDiff,WhiteTitle,Black,BlackElo,BlackRatingDiff,BlackTitle\n".as_bytes())?;
         serializer.moves.write("GameId,Num,San,Nag,Clk,Eval\n".as_bytes())?;

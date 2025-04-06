@@ -1,11 +1,11 @@
-use std::{fs::File, io::Write};
+use std::{fs::File, io::{BufWriter, Write}};
 
 use crate::{game::Game, r#move::Move};
 
 #[derive(Debug)]
 pub struct Serializer {
-    pub games: File,
-    pub moves: File,
+    pub games: BufWriter<File>,
+    pub moves: BufWriter<File>,
 }
 
 impl Serializer {
