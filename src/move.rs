@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::comments::*;
+
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct Move {
@@ -9,4 +11,26 @@ pub struct Move {
     pub nag: Option<u8>,
     pub clk: Option<String>,
     pub eval: Option<String>,
+}
+
+impl Move {
+    pub fn set(&mut self, key: &[u8], value: &[u8]) {
+        let value = Some(match String::from_utf8(value.to_owned()) {
+            Ok(str) => str,
+            Err(_) => {
+                let str = String::from_utf8_lossy(value);
+                println!("Invalid UTF-8: {} <- {:?}", str, value);
+                str.into_owned()
+            }
+        });
+        match key {
+            CLK => self.clk = value,
+            EVAL => self.eval = value,
+            key => println!(
+                "New comment found: {} <- {:?}",
+                String::from_utf8_lossy(key),
+                key
+            ),
+        }
+    }
 }
