@@ -3,13 +3,18 @@ use std::error::Error;
 use csv::Writer;
 use pgn_reader::{Nag, Outcome, RawComment, RawHeader, SanPlus, Visitor};
 
-use crate::{collector::Collector, serializer::Serializer, stats::Stats};
+use crate::{
+    collector::Collector, comment_iterator::CommentIterator, game::Game, r#move::Move,
+    serializer::Serializer, stats::Stats,
+};
 
 pub const GAMES_CSV: &str = "games.csv";
 pub const MOVES_CSV: &str = "moves.csv";
 
 #[derive(Debug)]
 pub struct Crawler {
+    pub game: Game,
+    pub r#move: Move,
     pub stats: Stats,
     pub collector: Collector,
     pub serializer: Serializer,
@@ -18,6 +23,8 @@ pub struct Crawler {
 impl Crawler {
     pub fn new() -> Result<Self, Box<dyn Error>> {
         Ok(Self {
+            game: Game::default(),
+            r#move: Move::default(),
             stats: Stats::default(),
             collector: Collector::default(),
             serializer: Serializer {
