@@ -13,33 +13,15 @@ Cargo.lock
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
-# Config files
-*.ron
-
-# Log files
-*.txt
-*.log
-*-log
-
-# CSV files that the program will read
-*.csv
-
 # Not to commit the private location of the icon set for the folder
 desktop.ini
 
 # VSCode folder
 .vscode/*
 
-# Track images
-*.png
-*.jpg
+# CSV files that the program will generate
+*.csv
 
-# Environmental variables
-build.rs
-
-# Executables
-*.exe
-
-# Data and backups
-*.dat
-*.bak
+# Dataset files
+*.pgn
+*.pgn.zst
