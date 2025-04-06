@@ -1,9 +1,6 @@
-use serde::{Deserialize, Serialize};
-
 use crate::comments::*;
 
-#[derive(Debug, Default, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "PascalCase")]
+#[derive(Debug, Default)]
 pub struct Move {
     pub game_id: usize,
     pub num: usize,

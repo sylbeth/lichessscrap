@@ -1,9 +1,6 @@
-use serde::{Deserialize, Serialize};
-
 use crate::headers::*;
 
-#[derive(Debug, Default, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "PascalCase")]
+#[derive(Debug, Default)]
 pub struct Game {
     pub id: usize,
     pub eco: String,

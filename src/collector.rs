@@ -75,6 +75,24 @@ impl Collector {
                 different_header_str.to_case(Case::Snake)
             );
         }
+
+        println!("\nCSV header (Headers)\n");
+
+        for different_header_str in different_str.iter() {
+            print!(
+                "{},",
+                different_header_str.to_case(Case::Pascal)
+            );
+            println!()
+        }
+
+        println!("\nCSV writing (Headers)\n");
+
+        for different_header_str in different_str.iter() {
+            println!("self.games.write(b\",\")?;");
+            println!("self.games.write(game.{}.to_string().as_bytes())?;", different_header_str.to_case(Case::Snake));
+            println!()
+        }
     }
 
     #[allow(dead_code)]
@@ -132,6 +150,24 @@ impl Collector {
                 "        self.{}.clear();",
                 different_comment_str.to_case(Case::Snake)
             );
+        }
+
+        println!("\nCSV header (Comments)\n");
+
+        for different_comment_str in different_str.iter() {
+            print!(
+                "{},",
+                different_comment_str.to_case(Case::Pascal)
+            );
+            println!()
+        }
+
+        println!("\nCSV writing (Comments)\n");
+
+        for different_comment_str in different_str.iter() {
+            println!("self.moves.write(b\",\")?;");
+            println!("self.moves.write(game.{}.to_string().as_bytes())?;", different_comment_str.to_case(Case::Snake));
+            println!()
         }
     }
 }
