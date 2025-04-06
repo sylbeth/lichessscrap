@@ -69,10 +69,10 @@ impl Collector {
 
         println!("\nStruct fields reset (Headers)\n");
 
-        for different_comment_str in different_str.iter() {
+        for different_header_str in different_str.iter() {
             println!(
                 "        self.{}.clear();",
-                different_comment_str.to_case(Case::Snake)
+                different_header_str.to_case(Case::Snake)
             );
         }
     }
