@@ -35,6 +35,7 @@ impl Collector {
         }
     }
 
+    #[allow(dead_code)]
     pub fn print_headers(&self) {
         let mut different = self.headers.iter().collect::<Vec<&Vec<u8>>>();
         let mut different_str = Vec::new();
@@ -50,21 +51,26 @@ impl Collector {
             }
         }
 
+        println!("Headers collection\n");
+
         println!("Constants for matching (Headers)\n");
 
         for (different_header, different_header_str) in different.iter().zip(different_str.iter()) {
             println!(
-                "pub const {}: [u8; {}] = {:?};",
+                "pub const {}: &[u8] = &{:?};",
                 different_header_str.to_case(Case::Constant),
-                different_header.len(),
                 different_header
             );
         }
 
-        println!("\nConstants for importing (Headers)\n");
+        println!("\nConstants for matching (Headers)\n");
 
         for different_header_str in different_str.iter() {
-            println!("    {},", different_header_str.to_case(Case::Constant));
+            println!(
+                "            {} => self.{} = value,",
+                different_header_str.to_case(Case::Constant),
+                different_header_str.to_case(Case::Snake)
+            );
         }
 
         println!("\nStruct fields (Headers)\n");
@@ -77,6 +83,7 @@ impl Collector {
         }
     }
 
+    #[allow(dead_code)]
     pub fn print_comments(&self) {
         let mut different = self.comments.iter().collect::<Vec<&Vec<u8>>>();
         let mut different_str = Vec::new();
@@ -99,17 +106,20 @@ impl Collector {
         for (different_comment, different_comment_str) in different.iter().zip(different_str.iter())
         {
             println!(
-                "pub const {}: [u8; {}] = {:?};",
+                "pub const {}: &[u8] = &{:?};",
                 different_comment_str.to_case(Case::Constant),
-                different_comment.len(),
                 different_comment
             );
         }
 
-        println!("\nConstants for importing (Comments)\n");
+        println!("\nConstants for matching (Comments)\n");
 
         for different_comment_str in different_str.iter() {
-            println!("    {},", different_comment_str.to_case(Case::Constant));
+            println!(
+                "            {} => self.{} = value,",
+                different_comment_str.to_case(Case::Constant),
+                different_comment_str.to_case(Case::Snake)
+            );
         }
 
         println!("\nStruct fields (Comments)\n");
