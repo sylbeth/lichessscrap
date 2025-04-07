@@ -1,3 +1,4 @@
+#[cfg(feature = "data")]
 use lichess::data::{game::Game, r#move::Move};
 
 #[cfg(all(feature = "csv", not(feature = "serde")))]

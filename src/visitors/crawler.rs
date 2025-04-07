@@ -5,6 +5,7 @@ use super::{
     comment_iterator::CommentIterator,
 };
 
+#[cfg(any(feature = "data", feature = "relations"))]
 use super::serializer::{LichessSerializer, Serializer};
 
 #[cfg(feature = "collection")]
