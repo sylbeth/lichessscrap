@@ -4,21 +4,28 @@ use csv::Writer;
 
 use super::LichessSerializer;
 
+#[cfg(feature = "data")]
 use super::{DataSerializer, GAMES_CSV, MOVES_CSV};
+#[cfg(feature = "data")]
 use lichess::data::{game::Game, r#move::Move};
 
 #[derive(Debug)]
 pub struct CSVSerializer {
+    #[cfg(feature = "data")]
     games: Writer<File>,
+    #[cfg(feature = "data")]
     moves: Writer<File>,
 }
 
 impl LichessSerializer for CSVSerializer {
     fn new() -> Self {
         let mut csv = Self {
+            #[cfg(feature = "data")]
             games: Writer::from_path(GAMES_CSV).expect("The creation of the games csv failed."),
+            #[cfg(feature = "data")]
             moves: Writer::from_path(MOVES_CSV).expect("The creation of the moves csv failed."),
         };
+        #[cfg(feature = "data")]
         csv.games
             .write_record(&[
                 "GameId",
@@ -43,6 +50,7 @@ impl LichessSerializer for CSVSerializer {
                 "BlackRatingDiff",
             ])
             .expect("The writing of the header of the games csv failed.");
+        #[cfg(feature = "data")]
         csv.moves
             .write_record(&["GameId", "Num", "San", "Nag", "Eval", "Clk"])
             .expect("The writing of the header of the moves csv failed.");
@@ -50,6 +58,7 @@ impl LichessSerializer for CSVSerializer {
     }
 }
 
+#[cfg(feature = "data")]
 impl DataSerializer for CSVSerializer {
     fn write_game(&mut self, game: &Game) {
         self.games

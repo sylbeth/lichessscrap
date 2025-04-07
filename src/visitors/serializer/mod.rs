@@ -19,6 +19,10 @@ pub const MOVES_CSV: &str = "moves.csv";
 
 pub trait LichessSerializer {
     fn new() -> Self;
+}
+
+#[cfg(feature = "data")]
+pub trait DataSerializer {
     fn write_game(&mut self, game: &Game);
     fn write_move(&mut self, r#move: &Move);
 }

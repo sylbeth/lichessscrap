@@ -5,26 +5,34 @@ use std::{
 
 use super::LichessSerializer;
 
+#[cfg(feature = "data")]
 use super::{DataSerializer, GAMES_CSV, MOVES_CSV};
+#[cfg(feature = "data")]
 use lichess::data::{game::Game, r#move::Move};
 
 #[derive(Debug)]
 pub struct ManualSerializer {
+    #[cfg(feature = "data")]
     games: BufWriter<File>,
+    #[cfg(feature = "data")]
     moves: BufWriter<File>,
 }
 
 impl LichessSerializer for ManualSerializer {
     fn new() -> Self {
         let mut manual = Self {
+            #[cfg(feature = "data")]
             games: BufWriter::new(
                 File::create(GAMES_CSV).expect("The creation of the games csv failed."),
             ),
+            #[cfg(feature = "data")]
             moves: BufWriter::new(
                 File::create(MOVES_CSV).expect("The creation of the moves csv failed."),
             ),
         };
+        #[cfg(feature = "data")]
         manual.games.write(b"GameId,Site,TimeControl,Result,Termination,Date,UTCDate,UTCTime,Opening,ECO,Event,Round,White,WhiteElo,WhiteTitle,WhiteRatingDiff,Black,BlackElo,BlackTitle,BlackRatingDiff").expect("The writing of the header of the games csv failed.");
+        #[cfg(feature = "data")]
         manual
             .moves
             .write(b"GameId,Num,San,Nag,Eval,Clk")
@@ -33,6 +41,7 @@ impl LichessSerializer for ManualSerializer {
     }
 }
 
+#[cfg(feature = "data")]
 impl DataSerializer for ManualSerializer {
     fn write_game(&mut self, game: &Game) {
         self.games.write(b"\n").unwrap();
