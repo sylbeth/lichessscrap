@@ -1,3 +1,6 @@
+#[cfg(feature = "csv")]
+mod csv_bench;
+
 #[test]
 pub fn num_write_bench() {
     use std::{
