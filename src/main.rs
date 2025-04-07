@@ -9,7 +9,10 @@ mod visitors;
 
 fn main() -> Result<(), Box<dyn Error>> {
     if let Some(file) = args().nth(1) {
+        #[cfg(feature = "zstd")]
         let mut pgn = BufferedReader::new(zstd::Decoder::new(File::open(file)?)?);
+        #[cfg(not(feature = "zstd"))]
+        let mut pgn = BufferedReader::new(File::open(file)?);
 
         let mut crawler = Crawler::new();
         pgn.read_all(&mut crawler)?;
