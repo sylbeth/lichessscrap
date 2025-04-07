@@ -1,3 +1,5 @@
+use std::str::from_utf8;
+
 use crate::constants::comments::*;
 
 #[derive(Debug, Default, Clone)]
@@ -24,17 +26,16 @@ impl Move {
     }
 
     pub fn set(&mut self, key: &[u8], value: &[u8]) {
-        let value = match String::from_utf8(value.to_owned()) {
+        let value = match from_utf8(value) {
             Ok(str) => str,
             Err(_) => {
                 let str = String::from_utf8_lossy(value);
-                println!("Invalid UTF-8: {} <- {:?}", str, value);
-                str.into_owned()
+                panic!("Invalid UTF-8: {} <- {:?}", str, value);
             }
         };
         match key {
-            CLK => self.clk = value,
-            EVAL => self.eval = value,
+            CLK => self.clk.push_str(value),
+            EVAL => self.eval.push_str(value),
             key => println!(
                 "New comment found: {} <- {:?}",
                 String::from_utf8_lossy(key),

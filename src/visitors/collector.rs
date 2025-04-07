@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{borrow::Cow, collections::HashSet, str::from_utf8};
 
 use convert_case::{Case, Casing};
 
@@ -26,27 +26,26 @@ impl Collector {
         let mut different_str = Vec::new();
         different.sort();
         for different_header in different.iter() {
-            match String::from_utf8((*different_header).clone()) {
-                Ok(str) => different_str.push(str),
+            match from_utf8(&different_header) {
+                Ok(str) => different_str.push(Cow::Borrowed(str)),
                 Err(_) => {
                     let str = String::from_utf8_lossy(different_header);
                     println!("Invalid UTF-8: {} <- {:?}", str, different_header);
-                    different_str.push(str.into_owned());
+                    different_str.push(str);
                 }
             }
         }
 
-        #[cfg(not(feature = "casing"))]
+        println!("Headers collection\n");
+
+        #[cfg(not(feature = "full-collection-print"))]
         {
-            println!("Headers collection\n");
             for different_header_str in different_str {
                 println!("{}", different_header_str);
             }
         }
-        #[cfg(feature = "casing")]
+        #[cfg(feature = "full-collection-print")]
         {
-            println!("Headers collection\n");
-
             println!("Constants for matching (Headers)\n");
 
             for different_header_str in different_str.iter() {
@@ -89,55 +88,64 @@ impl Collector {
         let mut different_str = Vec::new();
         different.sort();
         for different_comment in different.iter() {
-            match String::from_utf8((*different_comment).clone()) {
-                Ok(str) => different_str.push(str),
+            match from_utf8(&different_comment) {
+                Ok(str) => different_str.push(Cow::Borrowed(str)),
                 Err(_) => {
                     let str = String::from_utf8_lossy(different_comment);
                     println!("Invalid UTF-8: {} <- {:?}", str, different_comment);
-                    different_str.push(str.into_owned());
+                    different_str.push(str);
                 }
             }
         }
 
         println!("Comments collection\n");
 
-        println!("Constants for matching (Comments)\n");
-
-        for (different_comment, different_comment_str) in different.iter().zip(different_str.iter())
+        #[cfg(not(feature = "full-collection-print"))]
         {
-            println!(
-                "pub const {}: &[u8] = &{:?};",
-                different_comment_str.to_case(Case::Constant),
-                different_comment
-            );
+            for different_comment_str in different_str {
+                println!("{}", different_comment_str);
+            }
         }
+        #[cfg(feature = "full-collection-print")]
+        {
+            println!("Constants for matching (Comments)\n");
 
-        println!("\nConstants for matching (Comments)\n");
+            for (different_comment, different_comment_str) in different.iter().zip(different_str.iter())
+            {
+                println!(
+                    "pub const {}: &[u8] = &{:?};",
+                    different_comment_str.to_case(Case::Constant),
+                    different_comment
+                );
+            }
 
-        for different_comment_str in different_str.iter() {
-            println!(
-                "            {} => self.{} = value,",
-                different_comment_str.to_case(Case::Constant),
-                different_comment_str.to_case(Case::Snake)
-            );
-        }
+            println!("\nConstants for matching (Comments)\n");
 
-        println!("\nStruct fields (Comments)\n");
+            for different_comment_str in different_str.iter() {
+                println!(
+                    "            {} => self.{} = value,",
+                    different_comment_str.to_case(Case::Constant),
+                    different_comment_str.to_case(Case::Snake)
+                );
+            }
 
-        for different_comment_str in different_str.iter() {
-            println!(
-                "    {}: String,",
-                different_comment_str.to_case(Case::Snake)
-            );
-        }
+            println!("\nStruct fields (Comments)\n");
 
-        println!("\nStruct fields reset (Comments)\n");
+            for different_comment_str in different_str.iter() {
+                println!(
+                    "    {}: String,",
+                    different_comment_str.to_case(Case::Snake)
+                );
+            }
 
-        for different_comment_str in different_str.iter() {
-            println!(
-                "        self.{}.clear();",
-                different_comment_str.to_case(Case::Snake)
-            );
+            println!("\nStruct fields reset (Comments)\n");
+
+            for different_comment_str in different_str.iter() {
+                println!(
+                    "        self.{}.clear();",
+                    different_comment_str.to_case(Case::Snake)
+                );
+            }
         }
     }
 }

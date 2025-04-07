@@ -4,6 +4,78 @@ mod comm_iter_bench;
 mod csv_bench;
 
 #[test]
+pub fn utf8_conv_bench() {
+    use std::{
+        borrow::Cow,
+        time::Instant,
+        str::from_utf8,
+    };
+    const EXECUTIONS: i32 = 100000000;
+    const TEST_SLICE: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    let (elapsed_string, elapsed_cow, elapsed_str);
+    let mut time;
+    let mut buffer = String::new();
+
+    {
+        time = Instant::now();
+        for _ in 0..EXECUTIONS {
+            buffer.clear();
+            buffer = match String::from_utf8(TEST_SLICE.to_owned()) {
+                Ok(str) => str,
+                Err(_) => {
+                    let str = String::from_utf8_lossy(TEST_SLICE);
+                    println!("Invalid UTF-8: {} <- {:?}", str, TEST_SLICE);
+                    str.into_owned()
+                }
+            };
+        }
+
+        elapsed_string = time.elapsed();
+    }
+    {
+        time = Instant::now();
+
+        for _ in 0..EXECUTIONS {
+            buffer.clear();
+            buffer.push_str(&match from_utf8(TEST_SLICE) {
+                Ok(str) => Cow::Borrowed(str),
+                Err(_) => {
+                    let str = String::from_utf8_lossy(TEST_SLICE);
+                    println!("Invalid UTF-8: {} <- {:?}", str, TEST_SLICE);
+                    str
+                }
+            });
+        }
+
+        elapsed_cow = time.elapsed();
+    }
+    {
+        time = Instant::now();
+
+        for _ in 0..EXECUTIONS {
+            buffer.clear();
+            buffer.push_str(match from_utf8(TEST_SLICE) {
+                Ok(str) => str,
+                Err(_) => {
+                    let str = String::from_utf8_lossy(TEST_SLICE);
+                    panic!("Invalid UTF-8: {} <- {:?}", str, TEST_SLICE);
+                }
+            });
+        }
+
+        elapsed_str = time.elapsed();
+    }
+
+    println!("String: {}", elapsed_string.as_secs_f32());
+    println!("CoW: {}", elapsed_cow.as_secs_f32());
+    println!("Str: {}", elapsed_str.as_secs_f32());
+
+    assert!(elapsed_cow < elapsed_string);
+    assert!(elapsed_str < elapsed_cow);
+}
+
+#[test]
 pub fn num_write_bench() {
     use std::{
         fs::{File, remove_file},
