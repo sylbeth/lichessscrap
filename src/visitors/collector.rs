@@ -110,7 +110,8 @@ impl Collector {
         {
             println!("Constants for matching (Comments)\n");
 
-            for (different_comment, different_comment_str) in different.iter().zip(different_str.iter())
+            for (different_comment, different_comment_str) in
+                different.iter().zip(different_str.iter())
             {
                 println!(
                     "pub const {}: &[u8] = &{:?};",
