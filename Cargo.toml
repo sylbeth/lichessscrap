@@ -14,8 +14,11 @@ zstd = { version = "0.13.3", optional = true }
 
 [features]
 stats = []
+check = []
 collection = []
 full-collection-print = ["collection", "dep:convert_case"]
+data = []
+relations = []
 log = []
 csv = ["dep:csv"]
 serde = ["csv", "dep:serde"]

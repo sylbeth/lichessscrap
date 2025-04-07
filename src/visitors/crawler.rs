@@ -1,9 +1,11 @@
 use pgn_reader::{Nag, Outcome, RawComment, RawHeader, SanPlus, Visitor};
 
 use super::{
+    checker::Checker,
     comment_iterator::CommentIterator,
-    serializer::{LichessSerializer, Serializer},
 };
+
+use super::serializer::{LichessSerializer, Serializer};
 
 #[cfg(feature = "collection")]
 use super::collector::Collector;
@@ -31,8 +33,11 @@ pub struct Crawler {
     pub data: Data,
     #[cfg(feature = "stats")]
     pub stats: Stats,
+    #[cfg(feature = "check")]
+    pub checker: Checker,
     #[cfg(feature = "collection")]
     pub collector: Collector,
+    #[cfg(any(feature = "data", feature = "relations"))]
     pub serializer: Serializer,
 }
 
@@ -43,8 +48,11 @@ impl Crawler {
             data: Data::default(),
             #[cfg(feature = "stats")]
             stats: Stats::default(),
+            #[cfg(feature = "check")]
+            checker: Checker::default(),
             #[cfg(feature = "collection")]
             collector: Collector::default(),
+            #[cfg(any(feature = "data", feature = "relations"))]
             serializer: Serializer::new(),
         }
     }
@@ -67,7 +75,7 @@ impl Visitor for Crawler {
 
     fn begin_game(&mut self) {
         #[cfg(all(feature = "stats", feature = "log"))]
-        if self.stats.games % 100000 == 0 {
+        if self.stats.games % 1000000 == 0 {
             println!("Processed {} games.", self.stats.games);
         }
         #[cfg(feature = "data")]
@@ -75,6 +83,13 @@ impl Visitor for Crawler {
     }
 
     fn header(&mut self, _key: &[u8], _value: RawHeader<'_>) {
+        #[cfg(feature = "check")]
+        self.checker.check_header(
+            #[cfg(feature = "stats")]
+            self.stats.games,
+            _key,
+            _value.0,
+        );
         #[cfg(feature = "collection")]
         self.collector.collect_header(_key);
         #[cfg(feature = "data")]
@@ -104,6 +119,13 @@ impl Visitor for Crawler {
     fn comment(&mut self, _comment: RawComment<'_>) {
         let comments = CommentIterator::new(_comment.0);
         for (key, value) in comments {
+            #[cfg(feature = "check")]
+            Checker::check_comment(
+                #[cfg(feature = "stats")]
+                self.stats.games,
+                key,
+                value,
+            );
             #[cfg(feature = "collection")]
             self.collector.collect_comment(key);
             #[cfg(feature = "data")]
@@ -131,5 +153,12 @@ impl Visitor for Crawler {
         }
         #[cfg(feature = "stats")]
         self.stats.end_game();
+        #[cfg(feature = "check")]
+        self.checker.check_game(
+            #[cfg(feature = "stats")]
+            self.stats.games,
+            #[cfg(feature = "raw-data")]
+            &self.data.game,
+        );
     }
 }
