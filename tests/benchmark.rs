@@ -5,11 +5,7 @@ mod csv_bench;
 
 #[test]
 pub fn utf8_conv_bench() {
-    use std::{
-        borrow::Cow,
-        time::Instant,
-        str::from_utf8,
-    };
+    use std::{borrow::Cow, str::from_utf8, time::Instant};
     const EXECUTIONS: i32 = 100000000;
     const TEST_SLICE: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
