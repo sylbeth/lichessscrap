@@ -42,12 +42,12 @@ impl LichessSerializer for CSVSerializer {
                 "Round",
                 "White",
                 "WhiteElo",
-                "WhiteTitle",
                 "WhiteRatingDiff",
+                "WhiteTitle",
                 "Black",
                 "BlackElo",
-                "BlackTitle",
                 "BlackRatingDiff",
+                "BlackTitle",
             ])
             .expect("The writing of the header of the games csv failed.");
         #[cfg(feature = "data")]

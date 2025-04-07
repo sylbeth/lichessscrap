@@ -87,20 +87,20 @@ pub fn game_csv_bench() {
                 "Result",
                 "Termination",
                 "Date",
-                "UtcDate",
-                "UtcTime",
+                "UTCDate",
+                "UTCTime",
                 "Opening",
                 "ECO",
                 "Event",
                 "Round",
                 "White",
                 "WhiteElo",
-                "WhiteTitle",
                 "WhiteRatingDiff",
+                "WhiteTitle",
                 "Black",
                 "BlackElo",
-                "BlackTitle",
                 "BlackRatingDiff",
+                "BlackTitle",
             ]
             .as_slice()
             .into(),
@@ -158,12 +158,12 @@ pub fn game_csv_bench() {
             "Round",
             "White",
             "WhiteElo",
-            "WhiteTitle",
             "WhiteRatingDiff",
+            "WhiteTitle",
             "Black",
             "BlackElo",
-            "BlackTitle",
             "BlackRatingDiff",
+            "BlackTitle",
         ])
         .unwrap();
 
@@ -199,7 +199,7 @@ pub fn game_csv_bench() {
         let mut file = BufWriter::new(File::create(MANUAL).unwrap());
         time = Instant::now();
 
-        file.write(b"GameId,Site,TimeControl,Result,Termination,Date,UTCDate,UTCTime,Opening,ECO,Event,Round,White,WhiteElo,WhiteTitle,WhiteRatingDiff,Black,BlackElo,BlackTitle,BlackRatingDiff").unwrap();
+        file.write(b"GameId,Site,TimeControl,Result,Termination,Date,UTCDate,UTCTime,Opening,ECO,Event,Round,White,WhiteElo,WhiteRatingDiff,WhiteTitle,Black,BlackElo,BlackRatingDiff,BlackTitle").unwrap();
 
         for _ in 0..EXECUTIONS {
             file.write(b"\n").unwrap();
@@ -258,6 +258,29 @@ pub fn game_csv_bench() {
     let mut csvb_reader = Reader::from_path(CSVB).unwrap();
     let mut csvs_reader = Reader::from_path(CSVS).unwrap();
     let mut manual_reader = Reader::from_path(MANUAL).unwrap();
+
+    #[cfg(feature = "serde")]
+    {
+        let (ser, manual, csvb, csvs) = (
+            ser_reader.headers().unwrap(),
+            manual_reader.headers().unwrap(),
+            csvb_reader.headers().unwrap(),
+            csvs_reader.headers().unwrap(),
+        );
+        assert_eq!(ser, manual);
+        assert_eq!(csvs, csvb);
+        assert_eq!(ser, csvs);
+    }
+    #[cfg(not(feature = "serde"))]
+    {
+        let (manual, csvb, csvs) = (
+            manual_reader.headers().unwrap(),
+            csvb_reader.headers().unwrap(),
+            csvs_reader.headers().unwrap(),
+        );
+        assert_eq!(csvs, csvb);
+        assert_eq!(manual, csvs);
+    }
 
     #[cfg(feature = "serde")]
     for ((ser, manual), (csvb, csvs)) in ser_reader
@@ -434,6 +457,29 @@ pub fn move_csv_bench() {
     let mut csvb_reader = Reader::from_path(CSVB).unwrap();
     let mut csvs_reader = Reader::from_path(CSVS).unwrap();
     let mut manual_reader = Reader::from_path(MANUAL).unwrap();
+
+    #[cfg(feature = "serde")]
+    {
+        let (ser, manual, csvb, csvs) = (
+            ser_reader.headers().unwrap(),
+            manual_reader.headers().unwrap(),
+            csvb_reader.headers().unwrap(),
+            csvs_reader.headers().unwrap(),
+        );
+        assert_eq!(ser, manual);
+        assert_eq!(csvs, csvb);
+        assert_eq!(ser, csvs);
+    }
+    #[cfg(not(feature = "serde"))]
+    {
+        let (manual, csvb, csvs) = (
+            manual_reader.headers().unwrap(),
+            csvb_reader.headers().unwrap(),
+            csvs_reader.headers().unwrap(),
+        );
+        assert_eq!(csvs, csvb);
+        assert_eq!(manual, csvs);
+    }
 
     #[cfg(feature = "serde")]
     for ((ser, manual), (csvb, csvs)) in ser_reader

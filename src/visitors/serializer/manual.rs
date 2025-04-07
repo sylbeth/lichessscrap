@@ -31,7 +31,7 @@ impl LichessSerializer for ManualSerializer {
             ),
         };
         #[cfg(feature = "data")]
-        manual.games.write(b"GameId,Site,TimeControl,Result,Termination,Date,UTCDate,UTCTime,Opening,ECO,Event,Round,White,WhiteElo,WhiteTitle,WhiteRatingDiff,Black,BlackElo,BlackTitle,BlackRatingDiff").expect("The writing of the header of the games csv failed.");
+        manual.games.write(b"GameId,Site,TimeControl,Result,Termination,Date,UTCDate,UTCTime,Opening,ECO,Event,Round,White,WhiteElo,WhiteRatingDiff,WhiteTitle,Black,BlackElo,BlackRatingDiff,BlackTitle").expect("The writing of the header of the games csv failed.");
         #[cfg(feature = "data")]
         manual
             .moves
