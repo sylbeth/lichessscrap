@@ -10,17 +10,22 @@ use super::collector::Collector;
 
 use lichess::data::Data;
 
+#[cfg(feature = "stats")]
 use super::stats::Stats;
+#[cfg(feature = "stats")]
 use pgn_reader::San;
+#[cfg(feature = "stats")]
 const NULL_SAN: SanPlus = SanPlus {
     san: San::Null,
     suffix: None,
 };
+#[cfg(feature = "stats")]
 const NULL_NAG: Nag = Nag { 0: 0 };
 
 #[derive(Debug)]
 pub struct Crawler {
     pub data: Data,
+    #[cfg(feature = "stats")]
     pub stats: Stats,
     #[cfg(feature = "collection")]
     pub collector: Collector,
@@ -31,6 +36,7 @@ impl Crawler {
     pub fn new() -> Self {
         Self {
             data: Data::default(),
+            #[cfg(feature = "stats")]
             stats: Stats::default(),
             #[cfg(feature = "collection")]
             collector: Collector::default(),
@@ -46,6 +52,7 @@ impl Crawler {
             self.collector.print_comments();
             println!();
         }
+        #[cfg(feature = "stats")]
         print!("{}", self.stats);
     }
 }
@@ -54,6 +61,7 @@ impl Visitor for Crawler {
     type Result = ();
 
     fn begin_game(&mut self) {
+        #[cfg(all(feature = "stats", feature = "log"))]
         if self.stats.games % 100000 == 0 {
             println!("Processed {} games.", self.stats.games);
         }
@@ -64,6 +72,7 @@ impl Visitor for Crawler {
         #[cfg(feature = "collection")]
         self.collector.collect_header(_key);
         self.data.game.set(_key, _value.0);
+        #[cfg(feature = "stats")]
         self.stats.header(_key, _value);
     }
 
@@ -72,11 +81,13 @@ impl Visitor for Crawler {
             self.serializer.write_move(&self.data.r#move);
         }
         self.data.new_move(_san);
+        #[cfg(feature = "stats")]
         self.stats.san(NULL_SAN);
     }
 
     fn nag(&mut self, _nag: Nag) {
         self.data.add_nag(_nag);
+        #[cfg(feature = "stats")]
         self.stats.nag(NULL_NAG);
     }
 
@@ -87,14 +98,17 @@ impl Visitor for Crawler {
             self.collector.collect_comment(key);
             self.data.r#move.set(key, value);
         }
+        #[cfg(feature = "stats")]
         self.stats.comment(RawComment(&[]));
     }
 
     fn end_variation(&mut self) {
+        #[cfg(feature = "stats")]
         self.stats.end_variation();
     }
 
     fn outcome(&mut self, _outcome: Option<Outcome>) {
+        #[cfg(feature = "stats")]
         self.stats.outcome(None);
     }
 
@@ -103,6 +117,7 @@ impl Visitor for Crawler {
             self.serializer.write_game(&self.data.game);
             self.serializer.write_move(&self.data.r#move);
         }
+        #[cfg(feature = "stats")]
         self.stats.end_game();
     }
 }

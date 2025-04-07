@@ -13,7 +13,9 @@ shakmaty = "0.27.3"
 zstd = "0.13.3"
 
 [features]
+stats = []
 collection = []
 full-collection-print = ["collection", "dep:convert_case"]
+log = []
 csv = ["dep:csv"]
 serde = ["csv", "dep:serde"]
