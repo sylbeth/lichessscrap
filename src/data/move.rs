@@ -1,16 +1,18 @@
-use serde::{Deserialize, Serialize};
+use crate::constants::comments::*;
 
-use crate::comments::*;
-
-#[derive(Debug, Default, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "PascalCase")]
+#[derive(Debug, Default, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize, serde::Serialize),
+    serde(rename_all = "PascalCase")
+)]
 pub struct Move {
     pub game_id: usize,
     pub num: usize,
     pub san: String,
     pub nag: Option<u8>,
-    pub clk: String,
     pub eval: String,
+    pub clk: String,
 }
 
 impl Move {
@@ -41,3 +43,4 @@ impl Move {
         }
     }
 }
+

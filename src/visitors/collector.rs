@@ -9,21 +9,18 @@ pub struct Collector {
 }
 
 impl Collector {
-    #[allow(dead_code)]
     pub fn collect_header(&mut self, header: &[u8]) {
         if !self.headers.contains(header) {
             self.headers.insert(header.to_owned());
         }
     }
 
-    #[allow(dead_code)]
     pub fn collect_comment(&mut self, comment: &[u8]) {
         if !self.comments.contains(comment) {
             self.comments.insert(comment.to_owned());
         }
     }
 
-    #[allow(dead_code)]
     pub fn print_headers(&self) {
         let mut different = self.headers.iter().collect::<Vec<&Vec<u8>>>();
         let mut different_str = Vec::new();
@@ -39,45 +36,54 @@ impl Collector {
             }
         }
 
-        println!("Headers collection\n");
-
-        println!("Constants for matching (Headers)\n");
-
-        for (different_header, different_header_str) in different.iter().zip(different_str.iter()) {
-            println!(
-                "pub const {}: &[u8] = &{:?};",
-                different_header_str.to_case(Case::Constant),
-                different_header
-            );
+        #[cfg(not(feature = "casing"))]
+        {
+            println!("Headers collection\n");
+            for different_header_str in different_str {
+                println!("{}", different_header_str);
+            }
         }
+        #[cfg(feature = "casing")]
+        {
+            println!("Headers collection\n");
 
-        println!("\nConstants for matching (Headers)\n");
+            println!("Constants for matching (Headers)\n");
 
-        for different_header_str in different_str.iter() {
-            println!(
-                "            {} => self.{} = value,",
-                different_header_str.to_case(Case::Constant),
-                different_header_str.to_case(Case::Snake)
-            );
-        }
+            for different_header_str in different_str.iter() {
+                println!(
+                    "pub const {}: &[u8] = b\"{}\";",
+                    different_header_str.to_case(Case::Constant),
+                    different_header_str
+                );
+            }
 
-        println!("\nStruct fields (Headers)\n");
+            println!("\nConstants for matching (Headers)\n");
 
-        for different_header_str in different_str.iter() {
-            println!("    {}: String,", different_header_str.to_case(Case::Snake));
-        }
+            for different_header_str in different_str.iter() {
+                println!(
+                    "            {} => self.{} = value,",
+                    different_header_str.to_case(Case::Constant),
+                    different_header_str.to_case(Case::Snake)
+                );
+            }
 
-        println!("\nStruct fields reset (Headers)\n");
+            println!("\nStruct fields (Headers)\n");
 
-        for different_header_str in different_str.iter() {
-            println!(
-                "        self.{}.clear();",
-                different_header_str.to_case(Case::Snake)
-            );
+            for different_header_str in different_str.iter() {
+                println!("    {}: String,", different_header_str.to_case(Case::Snake));
+            }
+
+            println!("\nStruct fields reset (Headers)\n");
+
+            for different_header_str in different_str.iter() {
+                println!(
+                    "        self.{}.clear();",
+                    different_header_str.to_case(Case::Snake)
+                );
+            }
         }
     }
 
-    #[allow(dead_code)]
     pub fn print_comments(&self) {
         let mut different = self.comments.iter().collect::<Vec<&Vec<u8>>>();
         let mut different_str = Vec::new();
