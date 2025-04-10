@@ -34,64 +34,82 @@
 # Entities
 ## Game
 - *PK* **GameId**
-- *NULLABLE* **TimeControl**
-  - **StartingCounter**
+- **TimeControl**
+  - **StartTime**
   - **Increment**
-- *NULLABLE* **Result**
-- **Termination**
+- **End**
+  - **Result**
+  - **Termination**
 - **DateTime**
+  - **Date**
+  - **Time**
 - *DERIVED* **HasClock**
-- *DERIVED* **HasEvaluations**
+- *DERIVED* **HasEval**
 
 ## Move
 - *PK* **Num**
-- *PK* **Color**
-- *NULLABLE* **Nag**
-- *NULLABLE* **Eval**
-- *NULLABLE* **Clk**
-- *DERIVED* **IsCheckmate**
+- **Descriptor**
+  - **Piece**
+  - **StartPosition**
+    - **StartRow**
+    - **StartColumn**
+  - **EatenPiece**
+  - **EndPosition**
+    - **EndRow**
+    - **EndColumn**
+  - **PromotionPiece**
+  - **Castling**
+  - **IsEnPassant**
+  - **IsCheck**
+  - **IsCheckMate**
+  - **NAG**
+- **Eval**
+- **Clk**
 
 ## Opening
 - *PK* **OpeningId**
-- *UNIQUE* **Opening**
-- **Eco**
+- **Name**
+- **ECO**
 
 ## Player
 - *PK* **PlayerId**
-- *UNIQUE* **Name**
+- **Name**
 
 ## RuleSet
 - *PK* **RuleSetId**
   
 ### GameMode
-- *UNIQUE* **Name**
+- **Name**
 
 ### Tournament
-- *UNIQUE (Name + URLId)*
 - **Name**
 - **Kind**
 - **URLId**
 
-## SAN
-- *PK* **SanId**
-- **FullSan**
-  - **San**
-  - *NULLABLE* **Suffix**
-
 ## FinalConfiguration
-- *PK* **FCId**
-- *UNIQUE* **Fen**
+- *PK* **FinalConfigurationId**
+- **Descriptor**
+  - **EigthRow**
+  - **SeventhRow**
+  - **SixthRow**
+  - **FifthRow**
+  - **FourthRow**
+  - **ThirdRow**
+  - **SecondRow**
+  - **FirstRow**
 - *DERIVED* **EndPieces**
-  - **EndWPawns**
-  - **EndWBishops**
-  - **EndWKnights**
-  - **EndWRooks**
-  - **EndWQueens**
-  - **EndBPawns**
-  - **EndBBishops**
-  - **EndBKnights**
-  - **EndBRooks**
-  - **EndBQueens**
+  - **EndWhitePieces**
+    - **EndWhitePawns**
+    - **EndWhiteBishops**
+    - **EndWhiteKnights**
+    - **EndWhiteRooks**
+    - **EndWhiteQueens**
+  - **EndBlackPieces**
+    - **EndBlackPawns**
+    - **EndBlackBishops**
+    - **EndBlackKnights**
+    - **EndBlackRooks**
+    - **EndBlackQueens**
 
 # Relationships
 
@@ -104,35 +122,21 @@
 **Game** is comprised of **Move** `((0,1)-(1..N))`
 
 ## Simple
-**Game** has **Opening**
-- *Theoretical*: `((0..N)-(0,1))`
-- *Practical*: `((0..N)-1)`
+**Game** starts with **Opening** `((0..N)-(0,1))`
 
-**Game** belongs to a **RuleSet**
-- *Theoretical*: `((1..N)-(0,1))`
-- *Practical*: `((1..N)-1)`
+**Game** belongs to a **RuleSet** `((1..N)-(0,1))`
 
-**Game** ends in a **FinalConfiguration**
-- *Theoretical*: `((1..N)-(0,1))`
-- *Practical*: `((1..N)-1)`
+**Game** ends in a **FinalConfiguration** `((1..N)-(0,1))`
 
-**Move** is described by **SAN**
-- *Theoretical* `((1..N)-(0,1))`
-- *Practical*: `((1..N)-1)`
-
-**Player** plays as white in **Game**
-- *Theoretical* `((0,1)-(0..N))`
-- *Practical* `(1-(0..N))`
+**Player** plays as white in **Game** `((0,1)-(0..N))`
 - *Attributes*:
   - **Elo**
-  - *NULLABLE* **Title**
+  - **Title**
 
-**Player** plays as black in **Game**
-- *Theoretical* `((0,1)-(0..N))`
-- *Practical* `(1-(0..N))`
+**Player** plays as black in **Game** `((0,1)-(0..N))`
 - *Attributes*:
   - **Elo**
-  - *NULLABLE* **Title**
+  - **Title**
 
 # Tables
 ## Game
@@ -146,7 +150,7 @@
 - *NULLABLE FK* **Black**
 - *NULLABLE* **BlackElo**: `UInt16`
 - *NULLABLE* **BlackTitle**: `Enum(BOT, LM, GM, IM, FM, CM, NM, WGM, WIM, WFM, WCM, WNM)`
-- *NULLABLE* **StartingCounter**: `UInt16`
+- *NULLABLE* **StartTime**: `UInt16`
 - *NULLABLE* **Increment**: `UInt8`
 - *NULLABLE* **Result**: `Enum(1-0, 0-1, 1/2-1/2)`
 - **Termination**: `Enum(Normal, TimeForfeit, RulesInfraction, Abandoned, Unterminated)`
@@ -157,29 +161,37 @@
 ## Move
 - *PK (GameId, Num, Color)*
 - *FK* **GameId**
-- *FK* **SanId**
 - **Num**: `UInt16`
-- **Color**: `Enum(Black, White)`
-- *NULLABLE* **Nag**: `UInt8`
+- **Piece**: `Int(3)`
+- **StartRow** `Int(3)`
+- **StartColumn** `Int(3)`
+- **EatenPiece** `Int(3)`
+- **EndRow** `Int(3)`
+- **EndColumn** `Int(3)`
+- **PromotionPiece**  `Int(3)`
+- **IsCheck**: `BIT`
+- **IsCheckMate**: `BIT`
+- **NAG**: `UInt8`
 - *NULLABLE* **Eval**: `Union(Float, UInt8)`
 - *NULLABLE* **Clk**: `Time`
 - *DERIVED* **IsCheckmate**: `Bool`
 
 ## Opening
 - *PK* **OpeningId**: `Int`
-- *UNIQUE* **Opening**: `NChar(31)`?
-- **Eco**: `ECO` = `(A-Z + 00-99)` = `Char(3)`
+- *UNIQUE* **Opening**: `NChar(31)`
+- **EcoLetter**: `Int(5)`
+- **EcoNumber**: `Int(7)`
 
 ## Player
 - *PK* **PlayerId**: `Int`
-- *UNIQUE* **Name**: `NChar(31)`?
+- *UNIQUE* **Name**: `NChar(31)`
 
 ## RuleSet
 - *PK* **RuleSetId**: `Int`
   
 ### GameMode
 - *PK FK* **RuleSetId**
-- *UNIQUE* **Name**: `Nchar(31)`?
+- *UNIQUE* **Name**: `Nchar(31)`
 
 ### Tournament
 - *PK FK* **RuleSetId**
@@ -188,12 +200,15 @@
 - *NULLABLE* **Kind**: `Enum(Arena, Blitz)`
 - **URLId**: `Char(8)`
 
-## SAN
-- *PK* **SanId**: `Int`
-- **San**: `NChar(7)`
-- *NULLABLE* **Suffix**: `Enum(Check, Checkmate)`
-
 ## FinalConfiguration
 - *PK* **FCId**: `Int`
-- *UNIQUE* **Fen**: `Fen` = `NCHAR(92)`
+- *UNIQUE (EigthRow, SeventhRow, SixthRow, FifthRow, FourthRow, ThirdRow, SecondRow, FirstRow)*
+- **EigthRow**: `UInt32`
+- **SeventhRow**: `UInt32`
+- **SixthRow**: `UInt32`
+- **FifthRow**: `UInt32`
+- **FourthRow**: `UInt32`
+- **ThirdRow**: `UInt32`
+- **SecondRow**: `UInt32`
+- **FirstRow**: `UInt32`
 - **EndPieces**: `UInt32`
