@@ -38,7 +38,7 @@
   - **StartTime**
   - **Increment**
 - **End**
-  - **Result**
+  - **Reason**
   - **Termination**
 - **DateTime**
   - **Date**
