@@ -1,3 +1,4 @@
+pub mod attributes;
 pub mod constants;
 #[cfg(feature = "data")]
 pub mod data;
