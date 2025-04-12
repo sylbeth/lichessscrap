@@ -44,6 +44,46 @@ pub struct Game {
     pub black_title: String,
 }
 
+#[derive(Debug, Default, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize, serde::Serialize),
+    serde(rename_all = "PascalCase")
+)]
+#[cfg(feature = "clean-data")]
+pub struct Game {
+    pub game_id: usize,
+
+    pub site: String,
+    pub time_control: TimeControl,
+    pub result: ResultAttr,
+    pub termination: Termination,
+
+    pub date: NaiveDate,
+    #[cfg_attr(feature = "serde", serde(rename = "UTCDate"))]
+    pub utc_date: NaiveDate,
+    #[cfg_attr(feature = "serde", serde(rename = "UTCTime"))]
+    pub utc_time: NaiveTime,
+
+    pub opening: Opening,
+    #[cfg_attr(feature = "serde", serde(rename = "ECO"))]
+    pub eco: Eco,
+
+    pub event: RuleSet,
+    pub round: (),
+
+    pub white: String,
+    pub white_elo: Elo,
+    pub white_rating_diff: Option<i16>,
+    pub white_title: Title,
+
+    pub black: String,
+    pub black_elo: Elo,
+    pub black_rating_diff: Option<i16>,
+    pub black_title: Title,
+}
+
+#[cfg(feature = "raw-data")]
 impl Game {
     pub fn reset(&mut self) {
         self.site.clear();
@@ -109,3 +149,68 @@ impl Game {
     }
 }
 
+#[cfg(feature = "clean-data")]
+impl Game {
+    pub fn reset(&mut self) {
+        self.site.clear();
+        self.time_control.clear();
+        self.result.clear();
+        self.termination.clear();
+
+        self.date.clear();
+        self.utc_date.clear();
+        self.utc_time.clear();
+
+        self.opening.clear();
+        self.eco.clear();
+
+        self.event.clear();
+        self.round.clear();
+
+        self.white.clear();
+        self.white_elo.clear();
+        self.white_rating_diff.clear();
+        self.white_title.clear();
+
+        self.black.clear();
+        self.black_elo.clear();
+        self.black_rating_diff.clear();
+        self.black_title.clear();
+    }
+
+    pub fn set(&mut self, key: &[u8], value: &[u8]) {
+        let value = match from_utf8(value) {
+            Ok(str) => str,
+            Err(_) => {
+                let str = String::from_utf8_lossy(value);
+                panic!("Invalid UTF-8: {} <- {:?}", str, value);
+            }
+        };
+        match key {
+            SITE => self.site.push_str(value),
+            TIME_CONTROL => self.time_control.push_str(value),
+            RESULT => self.result.push_str(value),
+            TERMINATION => self.termination.push_str(value),
+            DATE => self.date.push_str(value),
+            UTC_DATE => self.utc_date.push_str(value),
+            UTC_TIME => self.utc_time.push_str(value),
+            OPENING => self.opening.push_str(value),
+            ECO => self.eco.push_str(value),
+            EVENT => self.event.push_str(value),
+            ROUND => self.round.push_str(value),
+            WHITE => self.white.push_str(value),
+            WHITE_ELO => self.white_elo.push_str(value),
+            WHITE_RATING_DIFF => self.white_rating_diff.push_str(value),
+            WHITE_TITLE => self.white_title.push_str(value),
+            BLACK => self.black.push_str(value),
+            BLACK_ELO => self.black_elo.push_str(value),
+            BLACK_RATING_DIFF => self.black_rating_diff.push_str(value),
+            BLACK_TITLE => self.black_title.push_str(value),
+            key => println!(
+                "New header found: {} <- {:?}",
+                String::from_utf8_lossy(key),
+                key
+            ),
+        }
+    }
+}
