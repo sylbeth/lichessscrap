@@ -10,6 +10,8 @@ use lichess::data::{game::Game, r#move::Move};
 #[cfg(feature = "mysql")]
 pub struct DbSerializer {
     pool: Arc<Pool>,
+    max_games: usize,
+    game_ids: Vec<(usize, u64)>,
 }
 
 impl fmt::Debug for DbSerializer {
@@ -23,8 +25,11 @@ impl fmt::Debug for DbSerializer {
 impl DbSerializer {
     pub fn new(database_url: &str) -> Self {
         let pool = Pool::new(database_url).expect("Failed to create MySQL connection pool");
-        DbSerializer { pool: Arc::new(pool) }
-    }
+        DbSerializer {pool: Arc::new(pool) ,
+                        max_games:100,
+                        game_ids: Vec::new()}
+
+        }
 
     pub fn get_or_create_player(&self, name: &str) -> u64 {
         let mut conn = self.pool.get_conn().unwrap();
@@ -76,31 +81,35 @@ impl DbSerializer {
     }
 
 
-    pub fn write_game(&self, game: &Game) {
+    pub fn write_game(&mut self, game: &Game) {
+        if self.game_ids.len() >= self.max_games {
+            return; 
+        }
         let mut conn = self.pool.get_conn().unwrap();
+        
         let ruleSetId = self.get_or_create_rule_set(&game.event);
 
         let white_id = self.get_or_create_player(&game.white);
         let black_id = self.get_or_create_player(&game.black);
         let opening_id = self.get_or_create_opening(&game.opening, &game.eco);
 
-        // conn.exec_drop(
-        //     r#"INSERT INTO Game (
-        //         RuleSetId, OpeningId, FCId,
-        //         White, WhiteElo, WhiteTitle,
-        //         Black, BlackElo, BlackTitle,
-        //         Result, Termination, DateTime,
-        //         HasClock, HasEvaluations
-        //     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"#,
-        //     params![
-        //         ruleSetId, opening_id, 1,
-        //         white_id, &game.white_elo, null_if_empty(&game.white_title),
-        //         black_id, &game.black_elo, null_if_empty(&game.black_title),
-        //         map_result(&game.result), map_termination(&game.termination),
-        //         format!("{} {}", game.utc_date, game.utc_time),
-        //         0, 0
-        //     ]
-        // ).unwrap();
+        conn.exec_drop(
+            r#"INSERT INTO Game (
+                RuleSetId, OpeningId, FCId,
+                White, WhiteElo, WhiteTitle,
+                Black, BlackElo, BlackTitle,
+                Result, Termination, DateTime,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"#,
+            (
+                ruleSetId, opening_id, 1,
+                white_id, &game.white_elo, &game.white_title,
+                black_id, &game.black_elo, &game.black_title,
+                map_result(&game.result), &game.termination,
+                format!("{} {}", game.utc_date, game.utc_time),
+            )
+        ).unwrap();//Ya añadiremos el resto de parametros más tarde
+        
+        self.game_ids.push((game.game_id.clone(), conn.last_insert_id()));
         
         
     }
