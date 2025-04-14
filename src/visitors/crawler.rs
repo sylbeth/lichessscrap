@@ -8,6 +8,10 @@ use super::{
 #[cfg(any(feature = "data", feature = "relations"))]
 use super::serializer::{LichessSerializer, Serializer};
 
+
+#[cfg(feature = "mysql")]
+use super::serializer::db::DbSerializer;
+
 #[cfg(feature = "collection")]
 use super::collector::Collector;
 
@@ -53,7 +57,9 @@ impl Crawler {
             checker: Checker::default(),
             #[cfg(feature = "collection")]
             collector: Collector::default(),
-            #[cfg(any(feature = "data", feature = "relations"))]
+            #[cfg(feature = "mysql")]
+            serializer: Serializer::new(  "mysql://usuario:contraseña@localhost:3306/mi_base_de_datos"),
+            #[cfg(all(any(feature = "data", feature = "relations"),not(feature = "mysql")))]
             serializer: Serializer::new(),
         }
     }
