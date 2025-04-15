@@ -80,6 +80,21 @@ impl DbSerializer {
         conn.last_insert_id()
     }
 
+    pub fn get_or_create_final_position(&self, position: &str) -> u64 {
+        let mut conn = self.pool.get_conn().unwrap();
+        if let Ok(Some(id)) = conn.exec_first::<u64, _, _>(
+            "SELECT FinalPositionId FROM FinalPosition WHERE  Position = ?", 
+            (position)
+        ) {
+            return id;
+        }
+        conn.exec_drop(
+            "INSERT INTO FinalPosition (Position) VALUES (?)",
+            (position,)
+        ).unwrap();
+        conn.last_insert_id()
+    }
+
 
     pub fn write_game(&mut self, game: &Game) {
         if self.game_ids.len() >= self.max_games {
