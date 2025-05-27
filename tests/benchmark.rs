@@ -5,8 +5,8 @@ mod comm_iter_bench;
 #[cfg(feature = "csv")]
 mod csv_bench;
 
-#[test]
 /// Bench to test which of String::from_utf8_lossy or str::from_utf8 is faster.
+#[test]
 pub fn utf8_conv_bench() {
     use std::{borrow::Cow, str::from_utf8, time::Instant};
     const EXECUTIONS: i32 = 100000000;
@@ -74,8 +74,8 @@ pub fn utf8_conv_bench() {
     assert!(elapsed_str < elapsed_cow);
 }
 
-#[test]
 /// Bench to test which of write!, to_string or format is faster.
+#[test]
 pub fn num_write_bench() {
     use std::{
         fs::{File, remove_file},
@@ -129,8 +129,8 @@ pub fn num_write_bench() {
     assert!(elapsed_write < elapsed_format);
 }
 
-#[test]
 /// Bench to test which of write! or as_bytes is faster.
+#[test]
 pub fn string_write_bench() {
     use std::{
         fs::{File, remove_file},

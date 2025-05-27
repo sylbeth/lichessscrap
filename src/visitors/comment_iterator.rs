@@ -62,6 +62,8 @@ impl<'c> Iterator for CommentIterator<'c> {
 
 #[cfg(test)]
 mod test {
+    use pretty_assertions::{assert_eq, assert_ne};
+
     use super::CommentIterator;
 
     #[test]

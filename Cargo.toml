@@ -22,6 +22,10 @@ simplelog = "0.12.2"
 time = "0.3.41"
 zstd = { version = "0.13.3", optional = true }
 
+[dev-dependencies]
+insta = "1.42.2"
+pretty_assertions = "1.4.1"
+
 [features]
 default = ["memchr", "zstd", "chrono"]
 full-collect = ["dep:convert_case"]

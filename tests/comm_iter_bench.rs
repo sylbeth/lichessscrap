@@ -1,8 +1,10 @@
 //! Benchmark module for the usage of memchr.
 
 #![cfg(feature = "memchr")]
-/// Auxiliary function to test a memchr based comment iterator.
 
+use pretty_assertions::assert_eq;
+
+/// Auxiliary function to test a memchr based comment iterator.
 pub fn comm_iter_memchr<T: std::io::Write>(file: &mut T, comment: &[u8]) {
     use memchr::memchr_iter;
     let mut spaces = memchr_iter(b' ', comment);
@@ -35,8 +37,8 @@ pub fn comm_iter_manual<T: std::io::Write>(file: &mut T, comment: &[u8]) {
     }
 }
 
-#[test]
 /// Bench to test which of comm_iter_memchr or com_iter_manual is faster.
+#[test]
 pub fn comm_iter_bench() {
     use self::{comm_iter_manual, comm_iter_memchr};
     use std::{
@@ -88,8 +90,8 @@ pub fn time_control_iter_manual(time_control: &[u8]) -> Option<usize> {
     None
 }
 
-#[test]
 /// Bench to test which of time_control_iter_manual, memchr or find is faster.
+#[test]
 pub fn time_control_iter_bench() {
     use std::time::Instant;
     const EXECUTIONS: i32 = 100000000;
@@ -137,8 +139,8 @@ pub fn time_control_iter_bench() {
     assert!(elapsed_manual < elapsed_memchr);
 }
 
-#[test]
 /// Bench to test which of time_control_iter_manual, split_once is faster.
+#[test]
 pub fn time_control_split_bench() {
     use std::time::Instant;
     const EXECUTIONS: i32 = 100000000;

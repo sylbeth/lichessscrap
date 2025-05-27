@@ -2,8 +2,10 @@
 
 #![cfg(feature = "csv")]
 
-#[test]
+use pretty_assertions::assert_eq;
+
 /// Bench to test which of a manual approach, a bytes record based approach, a string record based approach and a serde based approach is faster for the writing of the games csv file.
+#[test]
 pub fn game_csv_bench() {
     use csv::{Reader, Writer};
     use lichess::data::game::Game;
@@ -325,8 +327,8 @@ pub fn game_csv_bench() {
     assert!(elapsed_manual < *[elapsed_csvb, elapsed_csvs].iter().min().unwrap());
 }
 
-#[test]
 /// Bench to test which of a manual approach, a bytes record based approach, a string record based approach and a serde based approach is faster for the writing of the moves csv file.
+#[test]
 pub fn move_csv_bench() {
     use csv::{Reader, Writer};
     use lichess::data::r#move::Move;
