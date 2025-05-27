@@ -25,3 +25,10 @@ desktop.ini
 # Dataset files
 *.pgn
 *.pgn.zst
+
+# Log files
+*.log
+*-log
+
+# Arg files
+*.arg
