@@ -1,9 +1,12 @@
+//! Benchmark module for miscellaneous benches.
+
 #[cfg(feature = "memchr")]
 mod comm_iter_bench;
 #[cfg(feature = "csv")]
 mod csv_bench;
 
 #[test]
+/// Bench to test which of String::from_utf8_lossy or str::from_utf8 is faster.
 pub fn utf8_conv_bench() {
     use std::{borrow::Cow, str::from_utf8, time::Instant};
     const EXECUTIONS: i32 = 100000000;
@@ -72,6 +75,7 @@ pub fn utf8_conv_bench() {
 }
 
 #[test]
+/// Bench to test which of write!, to_string or format is faster.
 pub fn num_write_bench() {
     use std::{
         fs::{File, remove_file},
@@ -79,7 +83,7 @@ pub fn num_write_bench() {
         time::Instant,
     };
     const EXECUTIONS: i32 = 10000000;
-    const FILE: &str = "test.tmp";
+    const FILE: &str = "test_num.tmp";
     const TEST_NUM: u32 = 0123456789;
 
     let (elapsed_string, elapsed_format, elapsed_write);
@@ -126,6 +130,7 @@ pub fn num_write_bench() {
 }
 
 #[test]
+/// Bench to test which of write! or as_bytes is faster.
 pub fn string_write_bench() {
     use std::{
         fs::{File, remove_file},
@@ -133,7 +138,7 @@ pub fn string_write_bench() {
         time::Instant,
     };
     const EXECUTIONS: i32 = 10000000;
-    const FILE: &str = "test.tmp";
+    const FILE: &str = "test_string.tmp";
     const TEST_STR: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     let (elapsed_string, elapsed_write);

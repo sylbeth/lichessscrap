@@ -1,6 +1,9 @@
+//! Benchmark module for the usage of csv and serde.
+
 #![cfg(feature = "csv")]
 
 #[test]
+/// Bench to test which of a manual approach, a bytes record based approach, a string record based approach and a serde based approach is faster for the writing of the games csv file.
 pub fn game_csv_bench() {
     use csv::{Reader, Writer};
     use lichess::data::game::Game;
@@ -90,7 +93,7 @@ pub fn game_csv_bench() {
                 "UTCDate",
                 "UTCTime",
                 "Opening",
-                "ECO",
+                "Eco",
                 "Event",
                 "Round",
                 "White",
@@ -153,7 +156,7 @@ pub fn game_csv_bench() {
             "UTCDate",
             "UTCTime",
             "Opening",
-            "ECO",
+            "Eco",
             "Event",
             "Round",
             "White",
@@ -199,7 +202,7 @@ pub fn game_csv_bench() {
         let mut file = BufWriter::new(File::create(MANUAL).unwrap());
         time = Instant::now();
 
-        file.write(b"GameId,Site,TimeControl,Result,Termination,Date,UTCDate,UTCTime,Opening,ECO,Event,Round,White,WhiteElo,WhiteRatingDiff,WhiteTitle,Black,BlackElo,BlackRatingDiff,BlackTitle").unwrap();
+        file.write(b"GameId,Site,TimeControl,Result,Termination,Date,UTCDate,UTCTime,Opening,Eco,Event,Round,White,WhiteElo,WhiteRatingDiff,WhiteTitle,Black,BlackElo,BlackRatingDiff,BlackTitle").unwrap();
 
         for _ in 0..EXECUTIONS {
             file.write(b"\n").unwrap();
@@ -323,6 +326,7 @@ pub fn game_csv_bench() {
 }
 
 #[test]
+/// Bench to test which of a manual approach, a bytes record based approach, a string record based approach and a serde based approach is faster for the writing of the moves csv file.
 pub fn move_csv_bench() {
     use csv::{Reader, Writer};
     use lichess::data::r#move::Move;
