@@ -2,6 +2,8 @@
 name = "lichess"
 version = "0.1.0"
 edition = "2024"
+authors = ["Sílvia Elisabeth Romero García <silviae.romgar@gmail.com>", "Tai Villanueva Saiz"]
+description = "A scrapper for files from the Lichess database that generates data for a MySQL database."
 
 [dependencies]
 chrono = "0.4.40"
@@ -28,3 +30,7 @@ csv = ["dep:csv"]
 serde = ["csv", "dep:serde"]
 memchr = ["dep:memchr"]
 zstd = ["dep:zstd"]
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
