@@ -1,29 +1,39 @@
-use std::fmt::Display;
+//! Stats visitor for a PGN reader. Used for analyzing how much data there is in a given PGN file.
 
+use log::info;
 use pgn_reader::{Nag, RawComment, RawHeader, SanPlus, Visitor};
 use shakmaty::Outcome;
 
 #[derive(Debug, Default)]
+/// Stats visitor for a PGN reader.
 pub struct Stats {
+    /// Number of games in the PGN file.
     pub games: usize,
+    /// Number of headers in the PGN file.
     pub headers: usize,
+    /// Number of SANs in the PGN file.
     pub sans: usize,
+    /// Number of NAGs in the PGN file.
     pub nags: usize,
+    /// Number of comments in the PGN file.
     pub comments: usize,
+    /// Number of variations in the PGN file.
     pub variations: usize,
+    /// Number of outcomes in the PGN file.
     pub outcomes: usize,
 }
 
-impl Display for Stats {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "File stats:\n")?;
-        writeln!(f, "Games: {}", self.games)?;
-        writeln!(f, "Headers: {}", self.headers)?;
-        writeln!(f, "SANs: {}", self.sans)?;
-        writeln!(f, "NAGs: {}", self.nags)?;
-        writeln!(f, "Comments: {}", self.comments)?;
-        writeln!(f, "Variations: {}", self.variations)?;
-        writeln!(f, "Outcomes: {}", self.outcomes)
+impl Stats {
+    /// Logs the PGN files stats.
+    pub fn log(&self) {
+        info!("File stats");
+        info!("Games: {}", self.games);
+        info!("Headers: {}", self.headers);
+        info!("SANs: {}", self.sans);
+        info!("NAGs: {}", self.nags);
+        info!("Comments: {}", self.comments);
+        info!("Variations: {}", self.variations);
+        info!("Outcomes: {}", self.outcomes);
     }
 }
 
