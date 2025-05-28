@@ -27,15 +27,6 @@ pub const OPENING: &[u8] = b"Opening";
 /// ECO code header of a game.
 pub const ECO: &[u8] = b"ECO";
 
-/// White player header of a game.
-pub const WHITE: &[u8] = b"White";
-/// White player's elo header of a game.
-pub const WHITE_ELO: &[u8] = b"WhiteElo";
-/// White player's rating difference header of a game.
-pub const WHITE_RATING_DIFF: &[u8] = b"WhiteRatingDiff";
-/// White player's title header of a game.
-pub const WHITE_TITLE: &[u8] = b"WhiteTitle";
-
 /// Black player header of a game.
 pub const BLACK: &[u8] = b"Black";
 /// Black player's elo header of a game.
@@ -44,3 +35,12 @@ pub const BLACK_ELO: &[u8] = b"BlackElo";
 pub const BLACK_RATING_DIFF: &[u8] = b"BlackRatingDiff";
 /// Black player's title header of a game.
 pub const BLACK_TITLE: &[u8] = b"BlackTitle";
+
+/// White player header of a game.
+pub const WHITE: &[u8] = b"White";
+/// White player's elo header of a game.
+pub const WHITE_ELO: &[u8] = b"WhiteElo";
+/// White player's rating difference header of a game.
+pub const WHITE_RATING_DIFF: &[u8] = b"WhiteRatingDiff";
+/// White player's title header of a game.
+pub const WHITE_TITLE: &[u8] = b"WhiteTitle";
