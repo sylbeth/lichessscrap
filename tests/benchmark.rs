@@ -4,6 +4,8 @@
 mod comm_iter_bench;
 #[cfg(feature = "csv")]
 mod csv_bench;
+#[cfg(any(feature = "chrono", feature = "time"))]
+mod datetime_bench;
 
 /// Bench to test which of String::from_utf8_lossy or str::from_utf8 is faster.
 #[test]

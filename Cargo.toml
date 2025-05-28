@@ -30,6 +30,7 @@ pretty_assertions = "1.4.1"
 default = ["memchr", "zstd", "chrono"]
 full-collect = ["dep:convert_case"]
 chrono = ["dep:chrono"]
+time = ["time/parsing"]
 csv = ["dep:csv"]
 serde = ["csv", "dep:serde"]
 memchr = ["dep:memchr"]
