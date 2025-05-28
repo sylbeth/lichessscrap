@@ -1,35 +1,57 @@
+//! The entire information a Lichess game and its moves provide. They can be cleared up for reusability purposes.
+
 pub use game::Game;
 pub use r#move::Move;
 use pgn_reader::{Nag, SanPlus};
+use shakmaty::Position;
+
+use super::attributes::{error::ValuedAttributeParsingError, r#move as inner_move};
 
 pub mod game;
 pub mod r#move;
 
+/// All the data in a PGN file as it is being read.
 #[derive(Debug, Default)]
 pub struct Data {
+    /// The current game being analyzed.
     pub game: Game,
+    /// The current move being analyzed.
     pub r#move: Move,
 }
 
 impl Data {
+    /// When a new game happens, game and move must be reset.
     pub fn new_game(&mut self) {
-        self.game.game_id += 1;
         self.game.reset();
-        self.r#move.game_id += 1;
-        self.r#move.num = 0;
         self.r#move.reset();
     }
 
-    pub fn new_move(&mut self, san: SanPlus) {
-        self.r#move.reset();
-        self.r#move.num += 1;
-        self.r#move.san = san.to_string();
+    /// When a new move happens, move is advanced and parsed to board.
+    pub fn new_move(&mut self, san: SanPlus) -> Result<(), ValuedAttributeParsingError> {
+        self.r#move.next();
+        let current_move = san.san.to_move(&self.game.chess).map_err(|_| {
+            ValuedAttributeParsingError::from_inner_utf8(
+                inner_move::ERROR,
+                format!("{} at move {}", san, self.r#move.num),
+            )
+        })?;
+        let color = self.game.chess.turn();
+        self.game.chess.play_unchecked(&current_move);
+        inner_move::Move::from_move(current_move, san.suffix, color).map_err(|_| {
+            ValuedAttributeParsingError::from_inner_utf8(
+                inner_move::ERROR,
+                format!("{} at move {}", san, self.r#move.num),
+            )
+        })?;
+        Ok(())
     }
 
+    /// Adds the nag to the move's current value.
     pub fn add_nag(&mut self, nag: Nag) {
-        self.r#move.nag = Some(nag.0);
+        self.r#move.r#move.nag = nag;
     }
 
+    /// Checks whether the current move is valid or not.
     pub fn is_move_valid(&self) -> bool {
         self.r#move.num != 0
     }

@@ -1,216 +1,109 @@
-use std::str::from_utf8;
+//! The entire information a Lichess game provides. It can be cleared up for reusability purposes.
 
-use crate::constants::headers::{
-    BLACK, BLACK_ELO, BLACK_RATING_DIFF, BLACK_TITLE, DATE, ECO, EVENT, OPENING, RESULT, ROUND,
-    SITE, TERMINATION, TIME_CONTROL, UTC_DATE, UTC_TIME, WHITE, WHITE_ELO, WHITE_RATING_DIFF,
-    WHITE_TITLE,
+use shakmaty::Chess;
+
+use crate::attributes::{
+    //Date,
+    Eco,
+    Elo,
+    Opening,
+    PiecesLeft,
+    Player,
+    Result,
+    RuleSet,
+    Termination,
+    TimeControl,
+    Title,
+    UTCDate,
+    UTCTime,
+    attribute::StringAttribute,
 };
 
+/// Struct containing all the information of a Lichess game.
 #[derive(Debug, Default, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Deserialize, serde::Serialize),
-    serde(rename_all = "PascalCase")
-)]
 pub struct Game {
-    pub game_id: usize,
-
+    /// The website this game was played at.
     pub site: String,
-    pub time_control: String,
-    pub result: String,
-    pub termination: String,
-
-    pub date: String,
-    #[cfg_attr(feature = "serde", serde(rename = "UTCDate"))]
-    pub utc_date: String,
-    #[cfg_attr(feature = "serde", serde(rename = "UTCTime"))]
-    pub utc_time: String,
-
-    pub opening: String,
-    #[cfg_attr(feature = "serde", serde(rename = "ECO"))]
-    pub eco: String,
-
-    pub event: String,
-    pub round: String,
-
-    pub white: String,
-    pub white_elo: String,
-    pub white_rating_diff: String,
-    pub white_title: String,
-
-    pub black: String,
-    pub black_elo: String,
-    pub black_rating_diff: String,
-    pub black_title: String,
-}
-
-#[derive(Debug, Default, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Deserialize, serde::Serialize),
-    serde(rename_all = "PascalCase")
-)]
-#[cfg(feature = "clean-data")]
-pub struct Game {
-    pub game_id: usize,
-
-    pub site: String,
+    /// The time control this game used.
     pub time_control: TimeControl,
-    pub result: ResultAttr,
+    /// The result of this game.
+    pub result: Result,
+    /// The termination of this game.
     pub termination: Termination,
 
-    pub date: NaiveDate,
-    #[cfg_attr(feature = "serde", serde(rename = "UTCDate"))]
-    pub utc_date: NaiveDate,
-    #[cfg_attr(feature = "serde", serde(rename = "UTCTime"))]
-    pub utc_time: NaiveTime,
+    /// The date this game was played at.
+    //pub date: Date,
+    /// The UTC date this game was played at.
+    pub utc_date: UTCDate,
+    /// The UTC time this game was played at.
+    pub utc_time: UTCTime,
 
+    /// The opening that was played in this game.
     pub opening: Opening,
-    #[cfg_attr(feature = "serde", serde(rename = "ECO"))]
+    /// The ECO code of the opening.
     pub eco: Eco,
 
-    pub event: RuleSet,
-    pub round: (),
+    /// The ruleset this game was played under.
+    pub ruleset: RuleSet,
+    /// The round of the game.
+    //pub round: (),
 
-    pub black: String,
+    /// The username of the black player.
+    pub black: Player,
+    /// The elo of the black player.
     pub black_elo: Elo,
-    pub black_rating_diff: Option<i16>,
-    pub black_title: Title,
+    /// The rating difference of the black player.
+    //pub black_rating_diff: Option<i16>,
+    /// The title of the black player.
+    pub black_title: Option<Title>,
 
-    pub white: String,
+    /// The username of the white player.
+    pub white: Player,
+    /// The elo of the white player.
     pub white_elo: Elo,
-    pub white_rating_diff: Option<i16>,
-    pub white_title: Title,
+    /// The rating difference of the white player.
+    //pub white_rating_diff: Option<i16>,
+    /// The title of the white player.
+    pub white_title: Option<Title>,
+
+    /// The chess position of this game.
+    pub chess: Chess,
+
+    /// The pieces left at the end of the game.
+    pub pieces_left: PiecesLeft,
 }
 
-#[cfg(feature = "raw-data")]
 impl Game {
+    /// Resets the [`Game`] to its original state without deallocating.
     pub fn reset(&mut self) {
         self.site.clear();
-        self.time_control.clear();
-        self.result.clear();
-        self.termination.clear();
+        self.time_control = TimeControl(None);
+        self.result = Result::Null;
+        self.termination = Termination::Unterminated;
 
-        self.date.clear();
-        self.utc_date.clear();
-        self.utc_time.clear();
-
-        self.opening.clear();
-        self.eco.clear();
-
-        self.event.clear();
-        self.round.clear();
-
-        self.white.clear();
-        self.white_elo.clear();
-        self.white_rating_diff.clear();
-        self.white_title.clear();
-
-        self.black.clear();
-        self.black_elo.clear();
-        self.black_rating_diff.clear();
-        self.black_title.clear();
-    }
-
-    pub fn set(&mut self, key: &[u8], value: &[u8]) {
-        let value = match from_utf8(value) {
-            Ok(str) => str,
-            Err(_) => {
-                let str = String::from_utf8_lossy(value);
-                panic!("Invalid UTF-8: {} <- {:?}", str, value);
-            }
-        };
-        match key {
-            SITE => self.site.push_str(value),
-            TIME_CONTROL => self.time_control.push_str(value),
-            RESULT => self.result.push_str(value),
-            TERMINATION => self.termination.push_str(value),
-            DATE => self.date.push_str(value),
-            UTC_DATE => self.utc_date.push_str(value),
-            UTC_TIME => self.utc_time.push_str(value),
-            OPENING => self.opening.push_str(value),
-            ECO => self.eco.push_str(value),
-            EVENT => self.event.push_str(value),
-            ROUND => self.round.push_str(value),
-            WHITE => self.white.push_str(value),
-            WHITE_ELO => self.white_elo.push_str(value),
-            WHITE_RATING_DIFF => self.white_rating_diff.push_str(value),
-            WHITE_TITLE => self.white_title.push_str(value),
-            BLACK => self.black.push_str(value),
-            BLACK_ELO => self.black_elo.push_str(value),
-            BLACK_RATING_DIFF => self.black_rating_diff.push_str(value),
-            BLACK_TITLE => self.black_title.push_str(value),
-            key => println!(
-                "New header found: {} <- {:?}",
-                String::from_utf8_lossy(key),
-                key
-            ),
-        }
-    }
-}
-
-#[cfg(feature = "clean-data")]
-impl Game {
-    pub fn reset(&mut self) {
-        self.site.clear();
-        self.time_control.clear();
-        self.result.clear();
-        self.termination.clear();
-
-        self.date.clear();
-        self.utc_date.clear();
-        self.utc_time.clear();
+        //self.date = Date::default();
+        self.utc_date = UTCDate::default();
+        self.utc_time = UTCTime::default();
 
         self.opening.clear();
-        self.eco.clear();
+        self.eco = Eco::default();
 
-        self.event.clear();
-        self.round.clear();
-
-        self.white.clear();
-        self.white_elo.clear();
-        self.white_rating_diff.clear();
-        self.white_title.clear();
+        self.ruleset = RuleSet::default();
+        //self.round;
 
         self.black.clear();
-        self.black_elo.clear();
-        self.black_rating_diff.clear();
-        self.black_title.clear();
-    }
+        self.black_elo.0 = None;
+        //self.black_rating_diff = None;
+        self.black_title = None;
 
-    pub fn set(&mut self, key: &[u8], value: &[u8]) {
-        let value = match from_utf8(value) {
-            Ok(str) => str,
-            Err(_) => {
-                let str = String::from_utf8_lossy(value);
-                panic!("Invalid UTF-8: {} <- {:?}", str, value);
-            }
-        };
-        match key {
-            SITE => self.site.push_str(value),
-            TIME_CONTROL => self.time_control.push_str(value),
-            RESULT => self.result.push_str(value),
-            TERMINATION => self.termination.push_str(value),
-            DATE => self.date.push_str(value),
-            UTC_DATE => self.utc_date.push_str(value),
-            UTC_TIME => self.utc_time.push_str(value),
-            OPENING => self.opening.push_str(value),
-            ECO => self.eco.push_str(value),
-            EVENT => self.event.push_str(value),
-            ROUND => self.round.push_str(value),
-            WHITE => self.white.push_str(value),
-            WHITE_ELO => self.white_elo.push_str(value),
-            WHITE_RATING_DIFF => self.white_rating_diff.push_str(value),
-            WHITE_TITLE => self.white_title.push_str(value),
-            BLACK => self.black.push_str(value),
-            BLACK_ELO => self.black_elo.push_str(value),
-            BLACK_RATING_DIFF => self.black_rating_diff.push_str(value),
-            BLACK_TITLE => self.black_title.push_str(value),
-            key => println!(
-                "New header found: {} <- {:?}",
-                String::from_utf8_lossy(key),
-                key
-            ),
-        }
+        self.white.clear();
+        self.white_elo.0 = None;
+        //self.white_rating_diff = None;
+        self.white_title = None;
+
+        self.chess = Chess::default();
+
+        self.pieces_left.black = 0;
+        self.pieces_left.white = 0;
     }
 }
