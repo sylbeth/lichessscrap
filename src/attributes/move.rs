@@ -15,10 +15,7 @@ use shakmaty::{
 
 use crate::{attribute_err, attribute_fmt};
 
-use super::{
-    AttributeKind,
-    error::{AttributeParsingError, ValuedAttributeParsingError},
-};
+use super::error::{AttributeParsingError, ValuedAttributeParsingError};
 
 /// Mask that indicates there has been a check.
 const CHECK: u32 = 0b01 << 8;
@@ -66,10 +63,9 @@ impl Move {
         pos: &impl Position,
     ) -> Result<Self, ValuedAttributeParsingError> {
         match san.san.to_move(pos) {
-            Err(_) | Ok(Put { role: _, to: _ }) => Err(ValuedAttributeParsingError::from_inner_utf8(
-                ERROR,
-                san.to_string(),
-            )),
+            Err(_) | Ok(Put { role: _, to: _ }) => Err(
+                ValuedAttributeParsingError::from_inner_utf8(ERROR, san.to_string()),
+            ),
             Ok(r#move) => Ok(Self {
                 r#move,
                 suffix: san.suffix,
