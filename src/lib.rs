@@ -1,10 +1,11 @@
+//! Library module of the scrapper, which contains as submodules all the logic for the data.
+
 pub mod attributes;
 pub mod constants;
-#[cfg(feature = "data")]
-pub mod data;
+//pub mod data;
 
 pub mod prelude {
+    pub use super::attributes::*;
     pub use super::constants::{comments::*, headers::*};
-    #[cfg(feature = "data")]
-    pub use super::data::{Data, game::Game, r#move::Move};
+    //pub use super::data::{Data, game::Game, r#move::Move};
 }
