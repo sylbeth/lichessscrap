@@ -1,7 +1,7 @@
 use pgn_reader::{Nag, Outcome, RawComment, RawHeader, SanPlus, Visitor};
 
 use super::{
-    checker::Checker,
+    //checker::Checker,
     comment_iterator::CommentIterator,
 };
 
