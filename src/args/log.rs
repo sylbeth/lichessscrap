@@ -2,7 +2,7 @@
 
 use std::{error::Error, fs::File, io::BufWriter};
 
-use log::Level;
+use log::{Level, trace};
 use simplelog::{
     Color, ColorChoice::Auto as AutoColor, CombinedLogger, ConfigBuilder, TermLogger,
     TerminalMode::Mixed as MixedTerm, WriteLogger,
@@ -14,7 +14,6 @@ use super::CLIArgs;
 impl CLIArgs {
     /// Configures and initializes the loggers for the scrapper.
     pub fn init_loggers(&self) -> Result<(), Box<dyn Error>> {
-        trace!("CLIArgs init_loggers function.");
         if self.silent & self.log_file.is_none() {
             return Ok(());
         }
@@ -47,6 +46,7 @@ impl CLIArgs {
             )?,
             _ => (),
         }
+        trace!("CLIArgs init_loggers function.");
 
         Ok(())
     }

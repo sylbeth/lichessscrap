@@ -2,6 +2,7 @@
 
 use std::{error::Error, path::PathBuf};
 
+use ::log::{info, trace};
 use argfile::{PREFIX as FROMFILE_PREFIX, expand_args, parse_fromfile};
 use clap::{Args, Parser, ValueEnum};
 use clap_verbosity_flag::{InfoLevel, Verbosity};
