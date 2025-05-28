@@ -5,14 +5,16 @@ use std::{error::Error, fs::File, io::BufWriter};
 use log::Level;
 use simplelog::{
     Color, ColorChoice::Auto as AutoColor, CombinedLogger, ConfigBuilder, TermLogger,
-    TerminalMode::Mixed as MixedTerm, WriteLogger, format_description,
+    TerminalMode::Mixed as MixedTerm, WriteLogger,
 };
+use time::macros::format_description;
 
 use super::CLIArgs;
 
 impl CLIArgs {
     /// Configures and initializes the loggers for the scrapper.
     pub fn init_loggers(&self) -> Result<(), Box<dyn Error>> {
+        trace!("CLIArgs init_loggers function.");
         if self.silent & self.log_file.is_none() {
             return Ok(());
         }
@@ -31,12 +33,18 @@ impl CLIArgs {
         match (self.silent, &self.log_file) {
             (false, Some(log_file)) => CombinedLogger::init(vec![
                 TermLogger::new(level_filter, config.clone(), MixedTerm, AutoColor),
-                WriteLogger::new(level_filter, config, BufWriter::new(File::create(log_file)?)),
+                WriteLogger::new(
+                    level_filter,
+                    config,
+                    BufWriter::new(File::create(log_file)?),
+                ),
             ])?,
             (false, None) => TermLogger::init(level_filter, config, MixedTerm, AutoColor)?,
-            (true, Some(log_file)) => {
-                WriteLogger::init(level_filter, config, BufWriter::new(File::create(log_file)?))?
-            }
+            (true, Some(log_file)) => WriteLogger::init(
+                level_filter,
+                config,
+                BufWriter::new(File::create(log_file)?),
+            )?,
             _ => (),
         }
 

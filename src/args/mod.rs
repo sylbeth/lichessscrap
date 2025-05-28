@@ -1,7 +1,8 @@
 //! CLI argument parser for the scrapper.
 
-use std::path::PathBuf;
+use std::{error::Error, path::PathBuf};
 
+use argfile::{PREFIX as FROMFILE_PREFIX, expand_args, parse_fromfile};
 use clap::{Args, Parser, ValueEnum};
 use clap_verbosity_flag::{InfoLevel, Verbosity};
 
@@ -31,6 +32,18 @@ pub struct CLIArgs {
     /// Arguments for interacting with the mysql database.
     #[command(flatten)]
     pub database: DatabaseArgs,
+}
+
+impl CLIArgs {
+    /// Parses the command line arguments alongside the argfile and initializes the loggers.
+    pub fn parse_all() -> Result<Self, Box<dyn Error>> {
+        let args = Self::parse_from(expand_args(parse_fromfile, FROMFILE_PREFIX)?);
+        args.init_loggers()?;
+        trace!("CLIArgs new function.");
+        info!("Command line arguments read.");
+        info!("Logging initialized.");
+        Ok(args)
+    }
 }
 
 /// Subset of the CLI arguments used when checking for data consistency.
