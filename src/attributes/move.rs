@@ -36,7 +36,7 @@ pub struct Move {
     r#move: InternalMove,
     suffix: Option<Suffix>,
     pub nag: Nag,
-    color: Color,
+    pub color: Color,
 }
 
 impl Default for Move {

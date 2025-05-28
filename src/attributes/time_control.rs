@@ -3,7 +3,7 @@ use std::{fmt::Display, str::from_utf8};
 use super::error::AttributeParsingError;
 
 #[derive(Debug, Default, Clone, Copy)]
-pub struct TimeControl(Option<(u16, u8)>);
+pub struct TimeControl(pub Option<(u16, u8)>);
 
 impl TimeControl {
     /// Finds the time control separator in a time control bytes slice.

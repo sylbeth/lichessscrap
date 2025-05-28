@@ -10,11 +10,11 @@ use super::error::AttributeParsingError;
 #[derive(Debug, Default, Clone)]
 pub struct RuleSet {
     /// The name of the ruleset.
-    name: String,
+    pub name: String,
     /// The kind of the ruleset.
-    kind: RuleSetKind,
+    pub kind: RuleSetKind,
     /// The url id that this ruleset has.
-    url: String,
+    pub url: String,
 }
 
 impl RuleSet {

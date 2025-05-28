@@ -15,12 +15,15 @@ pub mod ruleset;
 pub mod time_control;
 
 pub use self::{
+    datetime::{clk::Clk, date::Date, utc_date::UTCDate, utc_time::UTCTime},
     end::{result::Result, termination::Termination},
     eval::Eval,
+    r#move::Move,
     opening::{
         Opening,
         eco::{Eco, EcoChar},
     },
+    pieces::PiecesLeft,
     player::{Player, elo::Elo, title::Title},
     ruleset::RuleSet,
     time_control::TimeControl,

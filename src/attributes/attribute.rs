@@ -228,7 +228,7 @@ macro_rules! attribute_fmt {
 macro_rules! attribute_err {
     ($kind:ident) => {
         #[doc = concat!("Error that parsing [`", stringify!($kind), "`] could generate.")]
-        const ERROR: crate::attributes::error::AttributeParsingError =
+        pub const ERROR: crate::attributes::error::AttributeParsingError =
             crate::attributes::error::AttributeParsingError::new(
                 crate::attributes::AttributeKind::$kind,
             );
