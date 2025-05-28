@@ -35,11 +35,7 @@ pub struct CLIArgs {
 
 /// Subset of the CLI arguments used when checking for data consistency.
 #[derive(Args, Debug)]
-#[group(
-    id = "consistency",
-    multiple = true,
-    requires = "check"
-)]
+#[group(id = "consistency", multiple = true, requires = "check")]
 pub struct ConsistencyArgs {
     /// Whether or not to check for data consistency.
     #[arg(short, long)]
@@ -62,6 +58,9 @@ pub struct DatabaseArgs {
     /// Mode of database operation.
     #[arg(short = 'm', long = "mode")]
     pub op_mode: Option<OpMode>,
+    /// Whether or not to continue even with errors.
+    #[arg(short, long, requires = "check")]
+    pub force_insert: bool,
 }
 
 /// Mode of database operation.
@@ -71,4 +70,6 @@ pub enum OpMode {
     Globals,
     /// Register game and move data from a random sample of the file.
     Sample,
+    /// Register both global data and the random sample.
+    Both,
 }
