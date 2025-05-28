@@ -37,18 +37,18 @@ pub fn game_csv_bench() {
         black_title: String::new(),
         black_rating_diff: "+1".into(),
     };
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     const SERIALIZED: &str = "games_ser.tmp";
     const CSVB: &str = "games_csvb.tmp";
     const CSVS: &str = "games_csvs.tmp";
     const MANUAL: &str = "games_man.tmp";
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     let elapsed_serialized;
     let (elapsed_csvb, elapsed_csvs, elapsed_manual);
     let mut time;
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     {
         let mut file = Writer::from_path(SERIALIZED).unwrap();
         time = Instant::now();
@@ -252,19 +252,19 @@ pub fn game_csv_bench() {
         elapsed_manual = time.elapsed();
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     println!("Serialized: {}", elapsed_serialized.as_secs_f32());
     println!("Bytes CSV: {}", elapsed_csvb.as_secs_f32());
     println!("String CSV: {}", elapsed_csvs.as_secs_f32());
     println!("Manual: {}", elapsed_manual.as_secs_f32());
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     let mut ser_reader = Reader::from_path(SERIALIZED).unwrap();
     let mut csvb_reader = Reader::from_path(CSVB).unwrap();
     let mut csvs_reader = Reader::from_path(CSVS).unwrap();
     let mut manual_reader = Reader::from_path(MANUAL).unwrap();
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     {
         let (ser, manual, csvb, csvs) = (
             ser_reader.headers().unwrap(),
@@ -287,7 +287,7 @@ pub fn game_csv_bench() {
         assert_eq!(manual, csvs);
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     for ((ser, manual), (csvb, csvs)) in ser_reader
         .records()
         .zip(manual_reader.records())
@@ -309,13 +309,13 @@ pub fn game_csv_bench() {
         assert_eq!(manual, csvs);
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     let _ = remove_file(SERIALIZED);
     let _ = remove_file(CSVB);
     let _ = remove_file(CSVS);
     let _ = remove_file(MANUAL);
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     assert!(
         elapsed_manual
             < *[elapsed_csvb, elapsed_csvs, elapsed_serialized]
@@ -347,18 +347,18 @@ pub fn move_csv_bench() {
         eval: "0.17".into(),
         clk: "0:00:30".into(),
     };
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     const SERIALIZED: &str = "moves_ser.tmp";
     const CSVB: &str = "moves_csvb.tmp";
     const CSVS: &str = "moves_csvs.tmp";
     const MANUAL: &str = "moves_man.tmp";
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     let elapsed_serialized;
     let (elapsed_csvb, elapsed_csvs, elapsed_manual);
     let mut time;
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     {
         let mut file = Writer::from_path(SERIALIZED).unwrap();
         time = Instant::now();
@@ -452,19 +452,19 @@ pub fn move_csv_bench() {
         elapsed_manual = time.elapsed();
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     println!("Serialized: {}", elapsed_serialized.as_secs_f32());
     println!("Bytes CSV: {}", elapsed_csvb.as_secs_f32());
     println!("String CSV: {}", elapsed_csvs.as_secs_f32());
     println!("Manual: {}", elapsed_manual.as_secs_f32());
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     let mut ser_reader = Reader::from_path(SERIALIZED).unwrap();
     let mut csvb_reader = Reader::from_path(CSVB).unwrap();
     let mut csvs_reader = Reader::from_path(CSVS).unwrap();
     let mut manual_reader = Reader::from_path(MANUAL).unwrap();
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     {
         let (ser, manual, csvb, csvs) = (
             ser_reader.headers().unwrap(),
@@ -487,7 +487,7 @@ pub fn move_csv_bench() {
         assert_eq!(manual, csvs);
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     for ((ser, manual), (csvb, csvs)) in ser_reader
         .records()
         .zip(manual_reader.records())
@@ -509,13 +509,13 @@ pub fn move_csv_bench() {
         assert_eq!(manual, csvs);
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     let _ = remove_file(SERIALIZED);
     let _ = remove_file(CSVB);
     let _ = remove_file(CSVS);
     let _ = remove_file(MANUAL);
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "chrono-serde", feature = "time-serde"))]
     assert!(
         elapsed_manual
             < *[elapsed_csvb, elapsed_csvs, elapsed_serialized]
