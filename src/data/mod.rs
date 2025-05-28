@@ -13,6 +13,8 @@ pub mod r#move;
 /// All the data in a PGN file as it is being read.
 #[derive(Debug, Default)]
 pub struct Data {
+    /// The number of games read.
+    pub games: usize,
     /// The current game being analyzed.
     pub game: Game,
     /// The current move being analyzed.
@@ -32,7 +34,7 @@ impl Data {
         let current_move = san.san.to_move(&self.game.chess).map_err(|_| {
             ValuedAttributeParsingError::from_inner_utf8(
                 inner_move::ERROR,
-                format!("{} at move {}", san, self.r#move.num),
+                format!("{san} at move {} of game {}", self.r#move.num, self.games),
             )
         })?;
         let color = self.game.chess.turn();
@@ -40,7 +42,7 @@ impl Data {
         inner_move::Move::from_move(current_move, san.suffix, color).map_err(|_| {
             ValuedAttributeParsingError::from_inner_utf8(
                 inner_move::ERROR,
-                format!("{} at move {}", san, self.r#move.num),
+                format!("{san} at move {} of game {}", self.r#move.num, self.games),
             )
         })?;
         Ok(())
