@@ -62,12 +62,12 @@ impl<'c> Iterator for CommentIterator<'c> {
 
 #[cfg(test)]
 mod test {
-    use pretty_assertions::{assert_eq, assert_ne};
+    use pretty_assertions::assert_eq;
 
     use super::CommentIterator;
 
-    #[test]
     /// Tests whether the comment iterator actually works or not.
+    #[test]
     pub fn comment_iterator_test() {
         let mut comment_iter = CommentIterator::new(b" [%eval 0.17] [%clk 0:00:30] ");
         assert_eq!(
