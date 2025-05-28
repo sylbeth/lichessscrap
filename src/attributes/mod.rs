@@ -9,8 +9,8 @@ pub mod error;
 pub mod eval;
 pub mod r#move;
 pub mod opening;
+pub mod pieces;
 pub mod player;
-pub mod position;
 pub mod ruleset;
 pub mod time_control;
 
@@ -44,7 +44,7 @@ pub enum AttributeKind {
     Eval,
     Clk,
     Move,
-    Position,
+    PiecesLeft,
 }
 
 impl AttributeKind {
@@ -66,7 +66,7 @@ impl AttributeKind {
             Self::Eval => eval::FORMAT,
             Self::Clk => datetime::clk::FORMAT,
             Self::Move => r#move::FORMAT,
-            Self::Position => position::FORMAT,
+            Self::PiecesLeft => pieces::FORMAT,
         }
     }
 }
