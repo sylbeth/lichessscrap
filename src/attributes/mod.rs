@@ -89,7 +89,7 @@ impl Display for AttributeKind {
             Self::Eval => "%eval",
             Self::Clk => "%clk",
             Self::Move => "move",
-            Self::Position => "position",
+            Self::PiecesLeft => "pieces left",
         }
         .fmt(f)
     }
