@@ -2,7 +2,7 @@ use std::{fmt::Display, str::from_utf8};
 
 use super::error::AttributeParsingError;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct TimeControl(Option<(u16, u8)>);
 
 impl TimeControl {
