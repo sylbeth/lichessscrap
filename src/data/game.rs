@@ -72,15 +72,15 @@ pub struct Game {
     pub event: RuleSet,
     pub round: (),
 
-    pub white: String,
-    pub white_elo: Elo,
-    pub white_rating_diff: Option<i16>,
-    pub white_title: Title,
-
     pub black: String,
     pub black_elo: Elo,
     pub black_rating_diff: Option<i16>,
     pub black_title: Title,
+
+    pub white: String,
+    pub white_elo: Elo,
+    pub white_rating_diff: Option<i16>,
+    pub white_title: Title,
 }
 
 #[cfg(feature = "raw-data")]

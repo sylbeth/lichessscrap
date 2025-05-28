@@ -63,14 +63,6 @@ pub struct Checker {
     event: bool,
     /// Whether a `Round` has been seen in the current game or not.
     round: bool,
-    /// Whether a `White` player has been seen in the current game or not.
-    white: bool,
-    /// Whether a `White` player's `Elo` has been seen in the current game or not.
-    white_elo: bool,
-    /// Whether a `White` player's `RatingDiff` has been seen in the current game or not.
-    white_rating_diff: bool,
-    /// Whether a `White` player's [`Title`] has been seen in the current game or not.
-    white_title: bool,
     /// Whether a `Black` player has been seen in the current game or not.
     black: bool,
     /// Whether a `Black` player's `Elo` has been seen in the current game or not.
@@ -79,6 +71,14 @@ pub struct Checker {
     black_rating_diff: bool,
     /// Whether a `Black` player's [`Title`] has been seen in the current game or not.
     black_title: bool,
+    /// Whether a `White` player has been seen in the current game or not.
+    white: bool,
+    /// Whether a `White` player's `Elo` has been seen in the current game or not.
+    white_elo: bool,
+    /// Whether a `White` player's `RatingDiff` has been seen in the current game or not.
+    white_rating_diff: bool,
+    /// Whether a `White` player's [`Title`] has been seen in the current game or not.
+    white_title: bool,
 }
 
 impl Checker {
@@ -102,14 +102,14 @@ impl Checker {
         self.eco = false;
         self.event = false;
         self.round = false;
-        self.white = false;
-        self.white_elo = false;
-        self.white_rating_diff = false;
-        self.white_title = false;
         self.black = false;
         self.black_elo = false;
         self.black_rating_diff = false;
         self.black_title = false;
+        self.white = false;
+        self.white_elo = false;
+        self.white_rating_diff = false;
+        self.white_title = false;
     }
 
     pub fn check_comment(&mut self, key: &[u8], value: &[u8]) {
@@ -219,18 +219,6 @@ impl Checker {
             #[cfg(not(feature = "stats"))]
             eprintln!("Event is null.");
         }
-        if !self.white {
-            #[cfg(feature = "stats")]
-            eprintln!("{game_id} - White is null.");
-            #[cfg(not(feature = "stats"))]
-            eprintln!("White is null.");
-        }
-        if !self.white_elo {
-            #[cfg(feature = "stats")]
-            eprintln!("{game_id} - WhiteElo is null.");
-            #[cfg(not(feature = "stats"))]
-            eprintln!("WhiteElo is null.");
-        }
         if !self.black {
             #[cfg(feature = "stats")]
             eprintln!("{game_id} - Black is null.");
@@ -242,6 +230,18 @@ impl Checker {
             eprintln!("{game_id} - BlackElo is null.");
             #[cfg(not(feature = "stats"))]
             eprintln!("BlackElo is null.");
+        }
+        if !self.white {
+            #[cfg(feature = "stats")]
+            eprintln!("{game_id} - White is null.");
+            #[cfg(not(feature = "stats"))]
+            eprintln!("White is null.");
+        }
+        if !self.white_elo {
+            #[cfg(feature = "stats")]
+            eprintln!("{game_id} - WhiteElo is null.");
+            #[cfg(not(feature = "stats"))]
+            eprintln!("WhiteElo is null.");
         }
         *self = Self::default();
     }
@@ -354,32 +354,6 @@ impl Checker {
                     println!("{}", value)
                 }
             }
-            WHITE => self.white = true,
-            WHITE_ELO => {
-                self.white_elo = true;
-                if let Err(e) = Elo::try_from(value) {
-                    #[cfg(feature = "stats")]
-                    eprintln!("{} - {}", game_id + 1, e);
-                    #[cfg(not(feature = "stats"))]
-                    eprintln!("{}", e);
-                }
-            }
-            WHITE_RATING_DIFF => {
-                if let Err(e) = value.parse::<i16>() {
-                    #[cfg(feature = "stats")]
-                    eprintln!("{} - {}", game_id + 1, e);
-                    #[cfg(not(feature = "stats"))]
-                    eprintln!("{}", e);
-                }
-            }
-            WHITE_TITLE => {
-                if let Err(e) = Title::try_from(value) {
-                    #[cfg(feature = "stats")]
-                    eprintln!("{} - {}", game_id + 1, e);
-                    #[cfg(not(feature = "stats"))]
-                    eprintln!("{}", e);
-                }
-            }
             BLACK => self.black = true,
             BLACK_ELO => {
                 self.black_elo = true;
@@ -399,6 +373,32 @@ impl Checker {
                 }
             }
             BLACK_TITLE => {
+                if let Err(e) = Title::try_from(value) {
+                    #[cfg(feature = "stats")]
+                    eprintln!("{} - {}", game_id + 1, e);
+                    #[cfg(not(feature = "stats"))]
+                    eprintln!("{}", e);
+                }
+            }
+            WHITE => self.white = true,
+            WHITE_ELO => {
+                self.white_elo = true;
+                if let Err(e) = Elo::try_from(value) {
+                    #[cfg(feature = "stats")]
+                    eprintln!("{} - {}", game_id + 1, e);
+                    #[cfg(not(feature = "stats"))]
+                    eprintln!("{}", e);
+                }
+            }
+            WHITE_RATING_DIFF => {
+                if let Err(e) = value.parse::<i16>() {
+                    #[cfg(feature = "stats")]
+                    eprintln!("{} - {}", game_id + 1, e);
+                    #[cfg(not(feature = "stats"))]
+                    eprintln!("{}", e);
+                }
+            }
+            WHITE_TITLE => {
                 if let Err(e) = Title::try_from(value) {
                     #[cfg(feature = "stats")]
                     eprintln!("{} - {}", game_id + 1, e);
