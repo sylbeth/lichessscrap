@@ -5,7 +5,7 @@ pub mod comment_iterator;
 pub mod serializer;
 pub mod stats;
 
-/// An error without more context than the game it happened at.
+/// Logs an error without more context than the game it happened at.
 #[macro_export]
 macro_rules! loneerror {
     ($str:literal, $self:ident) => {
@@ -14,7 +14,7 @@ macro_rules! loneerror {
     };
 }
 
-/// An error about a header of a game that is null.
+/// Logs an error about a header of a game that is null.
 #[macro_export]
 macro_rules! nullerror {
     ($str:literal, $self:ident) => {
@@ -23,7 +23,7 @@ macro_rules! nullerror {
     };
 }
 
-/// An error with context and the game it happened at.
+/// Logs an error with context and the game it happened at.
 #[macro_export]
 macro_rules! valuederror {
     ($self:ident, $error:ident) => {
