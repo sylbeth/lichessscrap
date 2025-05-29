@@ -26,6 +26,24 @@ const GAMES_SAMPLE_DIVISOR: usize = 1000;
 /// Main function of the scrapper.
 fn main() -> Result<(), Box<dyn Error>> {
     let args = CLIArgs::parse_all()?;
+    #[cfg(feature = "full-collect")]
+    info!("Feature full-collect is active.");
+    #[cfg(feature = "full-check")]
+    info!("Feature full-check is active.");
+    #[cfg(feature = "chrono")]
+    info!("Feature chrono is active.");
+    #[cfg(feature = "time")]
+    info!("Feature time is active.");
+    #[cfg(feature = "csv")]
+    info!("Feature csv is active.");
+    #[cfg(feature = "chrono-serde")]
+    info!("Feature chrono-serde is active.");
+    #[cfg(feature = "time-serde")]
+    info!("Feature time-serde is active.");
+    #[cfg(feature = "memchr")]
+    info!("Feature memchr is active.");
+    #[cfg(feature = "zstd")]
+    info!("Feature zstd is active.");
     trace!("main function.");
     debug!("{args:?}");
 
