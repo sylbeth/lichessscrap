@@ -27,8 +27,9 @@ insta = "1.42.2"
 pretty_assertions = "1.4.1"
 
 [features]
-default = ["memchr", "zstd", "chrono"]
+default = ["memchr", "zstd", "time", "full-check"]
 full-collect = ["dep:convert_case"]
+full-check = []
 chrono = ["dep:chrono"]
 time = ["time/parsing"]
 csv = ["dep:csv"]

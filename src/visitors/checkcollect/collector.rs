@@ -134,7 +134,7 @@ impl Collector {
         #[cfg(not(feature = "full-collect"))]
         {
             for different_comment_str in different_str {
-                writeln!(writer, "{}", different_comment_str)?;
+                writeln!(writer, "{}", skip_percentage(&different_comment_str))?;
             }
         }
         #[cfg(feature = "full-collect")]

@@ -4,6 +4,10 @@ use std::io::{self, Write};
 
 use log::trace;
 use pgn_reader::{RawComment, RawHeader, Visitor};
+use shakmaty::Outcome;
+
+#[cfg(feature = "full-check")]
+use pgn_reader::SanPlus;
 
 use super::comment_iterator::CommentIterator;
 use checker::Checker;
@@ -34,15 +38,32 @@ impl CheckerCollector {
 impl Visitor for CheckerCollector {
     type Result = ();
 
+    fn begin_game(&mut self) {
+        self.checker.new_game();
+    }
+
     fn header(&mut self, _key: &[u8], _value: RawHeader<'_>) {
         self.collector.collect_header(_key);
+        self.checker.check_header(_key, _value.0);
+    }
+
+    #[cfg(feature = "full-check")]
+    fn san(&mut self, _san: SanPlus) {
+        self.checker.san(_san)
     }
 
     fn comment(&mut self, _comment: RawComment<'_>) {
-        for (key, _) in CommentIterator::new(_comment.0) {
+        for (key, value) in CommentIterator::new(_comment.0) {
             self.collector.collect_comment(key);
+            self.checker.check_comment(key, value);
         }
     }
 
-    fn end_game(&mut self) {}
+    fn outcome(&mut self, _outcome: Option<Outcome>) {
+        self.checker.outcome(_outcome);
+    }
+
+    fn end_game(&mut self) {
+        self.checker.end_game();
+    }
 }
