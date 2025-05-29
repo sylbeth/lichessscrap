@@ -19,7 +19,7 @@ impl Display for AttributeParsingError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "unable to parse {} as it's not formatted correctly ({})",
+            "unable to parse `{}` as it's not formatted correctly ({})",
             self.0,
             self.0.format()
         )
@@ -72,7 +72,7 @@ impl Display for ValuedAttributeParsingError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}: {}  <- {:?}",
+            "{}: {} <- {:?}",
             self.inner,
             String::from_utf8_lossy(&self.value),
             self.value
