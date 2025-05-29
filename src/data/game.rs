@@ -22,17 +22,20 @@ use crate::attributes::{
 /// Struct containing all the information of a Lichess game.
 #[derive(Debug, Default, Clone)]
 pub struct Game {
+    /*
     /// The website this game was played at.
     pub site: String,
+    */
     /// The time control this game used.
     pub time_control: TimeControl,
     /// The result of this game.
     pub result: Result,
     /// The termination of this game.
     pub termination: Termination,
-
+    /*
     /// The date this game was played at.
-    //pub date: Date,
+    pub date: Date,
+    */
     /// The UTC date this game was played at.
     pub utc_date: UTCDate,
     /// The UTC time this game was played at.
@@ -45,15 +48,20 @@ pub struct Game {
 
     /// The ruleset this game was played under.
     pub ruleset: RuleSet,
+    
+    /*
     /// The round of the game.
-    //pub round: (),
+    pub round: (),
+    */
 
     /// The username of the black player.
     pub black: Player,
     /// The elo of the black player.
     pub black_elo: Elo,
+    /*
     /// The rating difference of the black player.
-    //pub black_rating_diff: Option<i16>,
+    pub black_rating_diff: Option<i16>,
+    */
     /// The title of the black player.
     pub black_title: Option<Title>,
 
@@ -61,8 +69,10 @@ pub struct Game {
     pub white: Player,
     /// The elo of the white player.
     pub white_elo: Elo,
+    /*
     /// The rating difference of the white player.
-    //pub white_rating_diff: Option<i16>,
+    pub white_rating_diff: Option<i16>,
+    */
     /// The title of the white player.
     pub white_title: Option<Title>,
 
@@ -76,7 +86,7 @@ pub struct Game {
 impl Game {
     /// Resets the [`Game`] to its original state without deallocating.
     pub fn reset(&mut self) {
-        self.site.clear();
+        //self.site.clear();
         self.time_control = TimeControl(None);
         self.result = Result::Null;
         self.termination = Termination::Unterminated;
