@@ -20,7 +20,7 @@ mod chrono {
     use chrono::{NaiveDate as CDate, NaiveDateTime as CDateTime, NaiveTime as CTime, ParseError};
 
     const CDATE_FORMAT: &str = "%Y.%m.%d";
-    const CTIME_FORMAT: &str = "%H:%H:%S";
+    const CTIME_FORMAT: &str = "%H:%M:%S";
 
     #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
     pub struct Date(pub CDate);
@@ -69,7 +69,7 @@ mod time {
     const TDATE_FORMAT: &[BorrowedFormatItem<'static>] =
         format_description!("[year].[month].[day]");
     const TTIME_FORMAT: &[BorrowedFormatItem<'static>] =
-        format_description!("[hour]:[minute]:[second]");
+        format_description!("[hour padding:none]:[minute]:[second]");
 
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct Date(pub TDate);
