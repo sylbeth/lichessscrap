@@ -27,7 +27,7 @@ const TIE_STR: &str = "1/2-1/2";
 const NULL_STR: &str = "*";
 
 /// Result of a Lichess game.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Result {
     /// A null result.

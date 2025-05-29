@@ -36,7 +36,7 @@ const ABANDONED_STR: &str = "Abandoned";
 const UNTERMINATED_STR: &str = "Unterminated";
 
 /// Termination of a Lichess game.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Termination {
     /// A null termination.

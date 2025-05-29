@@ -7,7 +7,7 @@ use deranged::RangedU8;
 use super::super::error::AttributeParsingError;
 
 /// Character at the start of an Eco code.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum EcoChar {
     #[default]

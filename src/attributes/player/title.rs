@@ -76,7 +76,7 @@ const MN_STR: &str = "MN";
 /// UTF-8 string slice representing the M title.
 const M_STR: &str = "M";
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Title {
     BOT,

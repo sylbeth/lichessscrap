@@ -30,7 +30,7 @@ pub use self::{
 };
 
 /// The kind of attribute used for parsing correctness.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AttributeKind {
     Result,
     Termination,
