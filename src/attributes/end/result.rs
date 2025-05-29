@@ -1,6 +1,7 @@
 //! Result of a Lichess game. Can be a win for each of the sides, a tie or none.
 
 use deranged::RangedU8;
+use shakmaty::{Color, Outcome};
 
 use super::super::error::AttributeParsingError;
 
@@ -90,6 +91,35 @@ impl Result {
             TIE => Ok(Self::Tie),
             NULL => Ok(Self::Null),
             _ => Err(ERROR),
+        }
+    }
+}
+
+impl From<Outcome> for Result {
+    fn from(value: Outcome) -> Self {
+        match value {
+            Outcome::Decisive {
+                winner: Color::White,
+            } => Self::White,
+            Outcome::Decisive {
+                winner: Color::Black,
+            } => Self::Black,
+            Outcome::Draw => Self::Tie,
+        }
+    }
+}
+
+impl From<Option<Outcome>> for Result {
+    fn from(value: Option<Outcome>) -> Self {
+        match value {
+            Some(Outcome::Decisive {
+                winner: Color::White,
+            }) => Self::White,
+            Some(Outcome::Decisive {
+                winner: Color::Black,
+            }) => Self::Black,
+            Some(Outcome::Draw) => Self::Tie,
+            None => Self::Null,
         }
     }
 }

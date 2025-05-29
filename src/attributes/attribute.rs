@@ -200,6 +200,30 @@ macro_rules! dtattribute {
             }
         }
 
+        impl TryFrom<&[u8]> for $struct {
+            type Error = crate::attributes::error::ValuedAttributeParsingError;
+
+            fn try_from(value: &[u8]) -> std::result::Result<Self, Self::Error> {
+                crate::attributes::attribute::DatetimeAttribute::parse_ascii(value)
+            }
+        }
+
+        impl TryFrom<&str> for $struct {
+            type Error = crate::attributes::error::ValuedAttributeParsingError;
+
+            fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
+                crate::attributes::attribute::DatetimeAttribute::parse(value)
+            }
+        }
+
+        impl std::str::FromStr for $struct {
+            type Err = crate::attributes::error::ValuedAttributeParsingError;
+
+            fn from_str(value: &str) -> std::result::Result<Self, Self::Err> {
+                crate::attributes::attribute::DatetimeAttribute::parse(value)
+            }
+        }
+
         impl std::fmt::Display for $struct {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 self.0.fmt(f)
