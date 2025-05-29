@@ -66,5 +66,8 @@ impl Visitor for Stats {
 
     fn end_game(&mut self) {
         self.games += 1;
+        if self.games % 1000000 == 0 {
+            info!("Registered stats of {} games.", self.games);
+        }
     }
 }
