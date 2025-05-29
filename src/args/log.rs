@@ -2,7 +2,7 @@
 
 use std::{error::Error, fs::File, io::BufWriter};
 
-use log::{Level, trace};
+use log::{info, trace, Level};
 use simplelog::{
     Color, ColorChoice::Auto as AutoColor, CombinedLogger, ConfigBuilder, TermLogger,
     TerminalMode::Mixed as MixedTerm, WriteLogger,
@@ -47,6 +47,7 @@ impl CLIArgs {
             _ => (),
         }
         trace!("CLIArgs init_loggers function.");
+        info!("Logging initialized.");
 
         Ok(())
     }

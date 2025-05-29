@@ -42,7 +42,6 @@ impl CLIArgs {
         args.init_loggers()?;
         trace!("CLIArgs new function.");
         info!("Command line arguments read.");
-        info!("Logging initialized.");
         Ok(args)
     }
 }
