@@ -107,9 +107,14 @@ impl Eco {
     pub fn from_str(value: &str) -> Result<Self, AttributeParsingError> {
         let mut chars = value.chars();
         if let Some(char) = chars.next() {
+            let ch = EcoChar::from_char(char)?;
             Ok(Self(
-                EcoChar::from_char(char)?,
-                Self::parse_eco_num(chars.as_str())?,
+                ch,
+                if ch == EcoChar::Q {
+                    Self::parse_eco_num(chars.as_str())?
+                } else {
+                    RangedU8::new_static::<0>()
+                },
             ))
         } else {
             Err(ERROR)
@@ -123,9 +128,14 @@ impl Eco {
     pub fn from_ascii(value: &[u8]) -> Result<Self, AttributeParsingError> {
         let mut iter = value.into_iter();
         if let Some(char) = iter.next() {
+            let ch = EcoChar::from_ascii(*char)?;
             Ok(Self(
-                EcoChar::from_ascii(*char)?,
-                Self::parse_eco_num(from_utf8(value).map_err(|_| ERROR)?)?,
+                ch,
+                if ch != EcoChar::Q {
+                    Self::parse_eco_num(from_utf8(iter.as_slice()).map_err(|_| ERROR)?)?
+                } else {
+                    RangedU8::new_static::<0>()
+                },
             ))
         } else {
             Err(ERROR)
