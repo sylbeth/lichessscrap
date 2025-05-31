@@ -1,5 +1,5 @@
 -l
-full.log
+database.log
 -c
 -m
-both
+full

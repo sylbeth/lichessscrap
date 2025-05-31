@@ -79,10 +79,8 @@ pub struct DatabaseArgs {
 /// Mode of database operation.
 #[derive(ValueEnum, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OpMode {
-    /// Register only global data, the data that is collected from each and every game.
-    Globals,
-    /// Register game and move data from a random sample of the file.
+    /// Register all data.
+    Full,
+    /// Register data from a random sample of the file.
     Sample,
-    /// Register both global data and the random sample.
-    Both,
 }
