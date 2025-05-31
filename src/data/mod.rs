@@ -1,7 +1,5 @@
 //! The entire information a Lichess game and its moves provide. They can be cleared up for reusability purposes.
 
-use std::str::from_utf8;
-
 pub use game::Game;
 pub use r#move::Move;
 
@@ -60,7 +58,7 @@ impl Default for Data {
 }
 
 impl Data {
-    /// When a new game happens, game and move must be reset.
+    /// When a new game happens, game, move and moves must be reset.
     pub fn new_game(&mut self) {
         self.game.reset();
         self.r#move.reset();
@@ -70,7 +68,7 @@ impl Data {
 
     /// When a new move happens, move is advanced and parsed to board.
     pub fn new_move(&mut self, san: SanPlus) {
-        if self.is_move_valid() {
+        if self.is_move_processed() {
             self.moves.push(self.r#move.clone());
         }
         self.r#move.next();
@@ -99,7 +97,7 @@ impl Data {
         };
     }
 
-    /// Processes the comment of a move.
+    /// Processes the comment of a move, parsing the values of its fields.
     pub fn process_comment(&mut self, key: &[u8], value: &[u8]) {
         match key {
             CLK => match Clk::try_from(value) {
@@ -126,7 +124,7 @@ impl Data {
         }
     }
 
-    /// Processes the header of a game.
+    /// Processes the header of a game, parsing the values of its fields.
     pub fn process_header(&mut self, key: &[u8], value: &[u8]) {
         match key {
             SITE => (),
@@ -238,7 +236,7 @@ impl Data {
         }
     }
 
-    /// Properly ends and processes the data of the game.
+    /// Properly ends and processes the data of the game, setting the board configuration field and pushing the last move to moves.
     pub fn end_game(&mut self) {
         match BoardConfiguration::from_board(self.game.chess.board()) {
             Ok(value) => self.game.final_conf = value,
@@ -246,13 +244,13 @@ impl Data {
                 valuederror!(self, e);
             }
         };
-        if self.is_move_valid() {
+        if self.is_move_processed() {
             self.moves.push(self.r#move.clone())
         }
     }
 
-    /// Checks whether the current move is valid or not.
-    pub const fn is_move_valid(&self) -> bool {
+    /// Checks whether the current move is a fully processed move or not.
+    pub const fn is_move_processed(&self) -> bool {
         self.r#move.num != 0
     }
 }

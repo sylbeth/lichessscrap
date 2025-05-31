@@ -31,7 +31,7 @@ impl Move {
         self.clk = None;
     }
 
-    /// Gets the parameters for MySQL insertion.
+    /// Prepares the parameters for MySQL insertion of this data.
     pub fn as_params(&self, game_id: u64) -> Params {
         let (eval_float, eval_int) = match self.eval {
             Some(Eval::Numeric(num)) => (Some(num), None),

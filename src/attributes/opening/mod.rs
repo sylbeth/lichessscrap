@@ -9,7 +9,7 @@ pub mod eco;
 crate::sattribute!(Opening);
 
 impl Opening {
-    /// Gets the parameters for MySQL insertion.
+    /// Prepares the parameters for MySQL insertion of this data.
     pub fn as_insert_params(&self, eco: Eco) -> Params {
         params! {
             "name" => &self.0,
@@ -18,7 +18,7 @@ impl Opening {
         }
     }
 
-    /// Gets the parameters for MySQL selection.
+    /// Prepares the parameters for MySQL selection of this data.
     pub fn as_select_params(&self) -> Params {
         params! {
             "name" => &self.0

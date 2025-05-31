@@ -1,4 +1,4 @@
-//! The ruleset of a Lichess game. It can be part of a tournament or a simple game ruleset.
+//! The ruleset (event) of a Lichess game. It can be part of a tournament or a simple game ruleset.
 
 use std::{fmt::Display, str::from_utf8};
 
@@ -26,10 +26,10 @@ impl RuleSet {
         self.url.clear();
     }
 
-    /// Tries to parse a `&str` as an [`RuleSet`].
+    /// Tries to fill the [`RuleSet`]'s data using a `&str`.
     ///
     /// # Errors
-    /// Will return [`AttributeParsingError`] if it's not possible to parse this string slice into an [`Elo`].
+    /// Will return [`AttributeParsingError`] if it's not possible to fill this [`RuleSet`] using a string slice.
     pub fn fill_str(&mut self, value: &str) -> Result<(), AttributeParsingError> {
         let mut split_iter = value.split_terminator(' ').rev();
         if let Some(last_split) = split_iter.next() {
@@ -69,15 +69,15 @@ impl RuleSet {
         }
     }
 
-    /// Tries to parse a `&[u8]` as an [`RuleSet`].
+    /// Tries to fill the [`RuleSet`]'s data using a `&[u8]`.
     ///
     /// # Errors
-    /// Will return [`AttributeParsingError`] if it's not possible to parse this bytes slice into an [`RuleSet`].
+    /// Will return [`AttributeParsingError`] if it's not possible to fill this [`RuleSet`] using a bytes slice.
     pub fn fill_ascii(&mut self, value: &[u8]) -> Result<(), AttributeParsingError> {
         self.fill_str(from_utf8(value).map_err(|_| ERROR)?)
     }
 
-    /// Gets the parameters for MySQL insertion.
+    /// Prepares the parameters for MySQL insertion of this data.
     pub fn as_insert_params(&self) -> Params {
         params! {
             "name" => &self.name,
@@ -86,7 +86,7 @@ impl RuleSet {
         }
     }
 
-    /// Gets the parameters for MySQL selection.
+    /// Prepares the parameters for MySQL selection of this data.
     pub fn as_select_params(&self) -> Params {
         params! {
             "name" => &self.name,

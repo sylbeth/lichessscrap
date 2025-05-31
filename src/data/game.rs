@@ -85,7 +85,7 @@ pub struct Game {
     /// The chess position of this game.
     pub chess: Chess,
 
-    /// The pieces left at the end of the game.
+    /// The board configuration at the end of the game.
     pub final_conf: BoardConfiguration,
 }
 

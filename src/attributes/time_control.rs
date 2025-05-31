@@ -1,7 +1,10 @@
+//! The time control used in a Lichess game. It's a two numbers separated by a + sign, indicating the starting value for the timer and the increment that is given for each move.
+
 use std::{fmt::Display, str::from_utf8};
 
 use super::error::AttributeParsingError;
 
+/// The time control used in a Lichess game.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct TimeControl(pub Option<(u16, u8)>);
 

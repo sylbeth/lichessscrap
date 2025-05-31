@@ -8,7 +8,7 @@ pub mod title;
 crate::sattribute!(Player);
 
 impl Player {
-    /// Gets the parameters for MySQL insertion and selection.
+    /// Prepares the parameters for MySQL insertion and selection of this data.
     pub fn as_params(&self) -> Params {
         params! {
             "name" => &self.0,
