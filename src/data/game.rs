@@ -1,5 +1,6 @@
 //! The entire information a Lichess game provides. It can be cleared up for reusability purposes.
 
+use mysql::{Params, params};
 use shakmaty::Chess;
 
 use crate::attributes::{
@@ -17,6 +18,7 @@ use crate::attributes::{
     UTCDate,
     UTCTime,
     attribute::StringAttribute,
+    datetime::Datetime,
 };
 
 /// Struct containing all the information of a Lichess game.
@@ -121,5 +123,34 @@ impl Game {
         self.chess = Chess::default();
 
         self.final_conf = FinalConfiguration::default();
+    }
+
+    /// Gets the parameters for MySQL insertion.
+    pub fn as_params(
+        &self,
+        ruleset_id: u64,
+        opening_id: Option<u64>,
+        fc_id: u64,
+        white: Option<u64>,
+        black: Option<u64>,
+    ) -> Params {
+        let (start_time, increment) = self.time_control.0.unzip();
+        params! {
+            ruleset_id,
+            opening_id,
+            fc_id,
+            white,
+            "white_elo" => self.white_elo.0,
+            "white_title" => self.white_title,
+            black,
+            "black_elo" => self.black_elo.0,
+            "black_title" => self.black_title,
+            start_time,
+            increment,
+            "result" => self.result,
+            "termination" => self.termination,
+            "datetime" => Datetime::new(self.utc_date.0, self.utc_time.0).0, "has_clock" => self.has_clock,
+            "has_evaluations" => self.has_evaluations,
+        }
     }
 }
