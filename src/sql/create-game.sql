@@ -1,0 +1,25 @@
+DROP TABLE IF EXISTS Game;
+CREATE TABLE IF NOT EXISTS Game (
+GameId INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+RuleSetId INT NOT NULL,
+OpeningId INT NULL,
+FCId INT NOT NULL,
+White INT NULL,
+WhiteElo SMALLINT UNSIGNED NULL,
+WhiteTitle ENUM('BOT', 'LM', 'GM', 'WGM', 'IM', 'WIM', 'FM', 'WFM', 'CM', 'WCM', 'NM', 'WNM', 'GR', 'MC', 'MN', 'M') NULL,
+Black INT NULL,
+BlackElo SMALLINT UNSIGNED NULL,
+BlackTitle ENUM('BOT', 'LM', 'GM', 'WGM', 'IM', 'WIM', 'FM', 'WFM', 'CM', 'WCM', 'NM', 'WNM', 'GR', 'MC', 'MN', 'M') NULL,
+StartTime SMALLINT UNSIGNED NOT NULL,
+Increment TINYINT UNSIGNED NOT NULL,
+Result ENUM('Null', 'White', 'Black', 'Tie'),
+Termination ENUM('Unterminated', 'Normal', 'TimeForfeit', 'RulesInfraction', 'Abandoned'),
+DateTime DATETIME,
+HasClock BOOLEAN,
+HasEvaluations BOOLEAN,
+FOREIGN KEY (RuleSetId) REFERENCES RuleSet(RuleSetId),
+FOREIGN KEY (OpeningId) REFERENCES Opening(OpeningId),
+FOREIGN KEY (FCId) REFERENCES FinalConfiguration(FCId),
+FOREIGN KEY (White) REFERENCES Player(PlayerId),
+FOREIGN KEY (Black) REFERENCES Player(PlayerId)
+);
