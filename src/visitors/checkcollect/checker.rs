@@ -7,6 +7,8 @@ use pgn_reader::{RawComment, RawHeader, Visitor};
 use shakmaty::Outcome;
 
 #[cfg(feature = "full-check")]
+use lichess::attributes::BoardConfiguration;
+#[cfg(feature = "full-check")]
 use pgn_reader::SanPlus;
 #[cfg(feature = "full-check")]
 use shakmaty::{Chess, Position};
@@ -253,6 +255,10 @@ impl Checker {
             nullerror!("White player's title", self);
         }
         */
+        #[cfg(feature = "full-check")]
+        if let Err(e) = BoardConfiguration::from_board(self.chess.board()) {
+            valuederror!(self, e);
+        };
     }
 
     /// Checks whether a header is valid or not.
