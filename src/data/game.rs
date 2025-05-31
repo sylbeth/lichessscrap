@@ -75,6 +75,11 @@ pub struct Game {
     /// The title of the white player.
     pub white_title: Option<Title>,
 
+    /// Whether or not this game has a clock.
+    pub has_clock: bool,
+    /// Whether or not this game has stockfish evaluations.
+    pub has_evaluations: bool,
+
     /// The chess position of this game.
     pub chess: Chess,
 
@@ -109,6 +114,9 @@ impl Game {
         self.white_elo.0 = None;
         //self.white_rating_diff = None;
         self.white_title = None;
+
+        self.has_clock = false;
+        self.has_evaluations = false;
 
         self.chess = Chess::default();
 
