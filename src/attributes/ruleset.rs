@@ -2,6 +2,8 @@
 
 use std::{fmt::Display, str::from_utf8};
 
+use mysql::prelude::FromValue;
+
 use crate::tattribute;
 
 use super::error::AttributeParsingError;
@@ -74,12 +76,12 @@ impl RuleSet {
 }
 
 /// The kind of RuleSet.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, FromValue)]
 #[repr(u8)]
 pub enum RuleSetKind {
     /// A normal game.
     #[default]
-    Game,
+    Game = 1,
     /// An arena tournament.
     Arena,
     /// A swiss tournament.

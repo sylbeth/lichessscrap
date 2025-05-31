@@ -1,6 +1,7 @@
 //! Result of a Lichess game. Can be a win for each of the sides, a tie or none.
 
 use deranged::RangedU8;
+use mysql::prelude::FromValue;
 use shakmaty::{Color, Outcome};
 
 use super::super::error::AttributeParsingError;
@@ -27,12 +28,12 @@ const TIE_STR: &str = "1/2-1/2";
 const NULL_STR: &str = "*";
 
 /// Result of a Lichess game.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, FromValue)]
 #[repr(u8)]
 pub enum Result {
     /// A null result.
     #[default]
-    Null,
+    Null = 1,
     /// A win from the white player.
     White,
     /// A win from the black player.
@@ -44,12 +45,12 @@ pub enum Result {
 impl Result {
     /// Retrieves the representation of this [`Result`] as a [`u8`], a value between 0 and 3.
     pub const fn as_u8(&self) -> u8 {
-        *self as u8
+        (*self as u8) - 1
     }
 
     /// Retrieves the representation of this [`Result`] as a [`RangedU8`], a value between 0 and 3.
     pub const fn as_ranged(&self) -> RangedU8<0, 3> {
-        RangedU8::new(*self as u8).expect("There are only 4 enum variants, this must work.")
+        RangedU8::new((*self as u8) - 1).expect("There are only 4 enum variants, this must work.")
     }
 
     /// Retrieves the representation of this [`Result`] as a `&'static str`.

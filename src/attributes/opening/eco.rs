@@ -3,15 +3,16 @@
 use std::{fmt::Display, str::from_utf8};
 
 use deranged::RangedU8;
+use mysql::prelude::FromValue;
 
 use super::super::error::AttributeParsingError;
 
 /// Character at the start of an Eco code.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, FromValue)]
 #[repr(u8)]
 pub enum EcoChar {
     #[default]
-    Q,
+    Q = 1,
     A,
     B,
     C,
@@ -22,12 +23,12 @@ pub enum EcoChar {
 impl EcoChar {
     /// Retrieves the representation of this [`EcoChar`] as a [`u8`], a value between 0 and 5.
     pub const fn as_u8(&self) -> u8 {
-        *self as u8
+        (*self as u8) - 1
     }
 
     /// Retrieves the representation of this [`EcoChar`] as a [`RangedU8`], a value between 0 and 5.
     pub const fn as_ranged(&self) -> RangedU8<0, 5> {
-        RangedU8::new(*self as u8).expect("There are only 5 enum variants, this must work.")
+        RangedU8::new((*self as u8) - 1).expect("There are only 5 enum variants, this must work.")
     }
 
     /// Retrieves the representation of this [`EcoChar`] as a `char`.

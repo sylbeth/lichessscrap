@@ -1,6 +1,7 @@
 //! Termination of a Lichess game. Can be any way a game can end.
 
 use deranged::RangedU8;
+use mysql::prelude::FromValue;
 
 use super::super::error::AttributeParsingError;
 
@@ -36,12 +37,12 @@ const ABANDONED_STR: &str = "Abandoned";
 const UNTERMINATED_STR: &str = "Unterminated";
 
 /// Termination of a Lichess game.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, FromValue)]
 #[repr(u8)]
 pub enum Termination {
     /// A null termination.
     #[default]
-    Unterminated,
+    Unterminated = 1,
     /// A termination by checkmate.
     Normal,
     /// A termination by time.
@@ -55,12 +56,12 @@ pub enum Termination {
 impl Termination {
     /// Retrieves the representation of this [`Termination`] as a [`u8`], a value between 0 and 5.
     pub const fn as_u8(&self) -> u8 {
-        *self as u8
+        (*self as u8) - 1
     }
 
     /// Retrieves the representation of this [`Termination`] as a [`RangedU8`], a value between 0 and 5.
     pub const fn as_ranged(&self) -> RangedU8<0, 4> {
-        RangedU8::new(*self as u8).expect("There are only 5 enum variants, this must work.")
+        RangedU8::new((*self as u8) - 1).expect("There are only 5 enum variants, this must work.")
     }
 
     /// Retrieves the representation of this [`Termination`] as a `&'static str`.

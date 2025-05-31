@@ -1,6 +1,7 @@
 //! Specification and parsing of an Title rating from a Lichess player.
 
 use deranged::RangedU8;
+use mysql::prelude::FromValue;
 
 use super::super::error::AttributeParsingError;
 
@@ -76,10 +77,10 @@ const MN_STR: &str = "MN";
 /// UTF-8 string slice representing the M title.
 const M_STR: &str = "M";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, FromValue)]
 #[repr(u8)]
 pub enum Title {
-    BOT,
+    BOT = 1,
     LM,
     GM,
     WGM,
@@ -100,12 +101,12 @@ pub enum Title {
 impl Title {
     /// Retrieves the representation of this [`Title`] as a [`u8`], a value between 0 and 15.
     pub const fn as_u8(&self) -> u8 {
-        *self as u8
+        (*self as u8) - 1
     }
 
     /// Retrieves the representation of this [`Title`] as a [`RangedU8`], a value between 0 and 15.
     pub const fn as_ranged(&self) -> RangedU8<0, 15> {
-        RangedU8::new(*self as u8).expect("There are only 16 enum variants, this must work.")
+        RangedU8::new((*self as u8) - 1).expect("There are only 16 enum variants, this must work.")
     }
 
     /// Retrieves the representation of this [`Title`] as a `&'static str`.
