@@ -32,7 +32,7 @@ pub struct FinalConfiguration {
 
 impl FinalConfiguration {
     /// Finds the number of pieces left on the board for each [`Color`](shakmaty::Color).
-    pub fn from_board(board: Board) -> Result<FinalConfiguration, ValuedAttributeParsingError> {
+    pub fn from_board(board: &Board) -> Result<FinalConfiguration, ValuedAttributeParsingError> {
         let (black_bitboard, white_bitboard) = (board.black(), board.white());
         let mut pieces_left = FinalConfiguration::default();
         for (pieces, (displacement, max, role)) in [
