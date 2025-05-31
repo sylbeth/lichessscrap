@@ -11,7 +11,7 @@ use pgn_reader::SanPlus;
 #[cfg(feature = "full-check")]
 use shakmaty::{Chess, Position};
 
-use crate::{loneerror, nullerror, valuederror, visitors::comment_iterator::CommentIterator};
+use crate::visitors::comment_iterator::CommentIterator;
 use lichess::{
     attributes::{
         Clk, Date, Eco, Elo, Eval, Opening, Player, Result as ResultAttr, RuleSet, Termination,
@@ -25,6 +25,7 @@ use lichess::{
             WHITE_RATING_DIFF, WHITE_TITLE,
         },
     },
+    loneerror, nullerror, valuederror,
 };
 
 /// Checker visitor for a PGN reader.
