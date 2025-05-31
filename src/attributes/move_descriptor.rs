@@ -3,7 +3,7 @@
 use pgn_reader::Nag;
 use shakmaty::{
     Color,
-    Move::{self as InternalMove, Castle, EnPassant, Normal, Put},
+    Move::{self, Castle, EnPassant, Normal, Put},
     Position,
     Role::{King, Pawn},
     Square,
@@ -32,17 +32,17 @@ const CASTLING: u32 = (King as u32) << 10;
 
 /// A move made in a Lichess game.
 #[derive(Debug, Clone)]
-pub struct Move {
-    r#move: InternalMove,
+pub struct MoveDescriptor {
+    r#move: Move,
     suffix: Option<Suffix>,
     pub nag: Nag,
     pub color: Color,
 }
 
-impl Default for Move {
+impl Default for MoveDescriptor {
     fn default() -> Self {
         Self {
-            r#move: InternalMove::Normal {
+            r#move: Move::Normal {
                 role: Pawn,
                 from: Square::A1,
                 capture: None,
@@ -56,7 +56,7 @@ impl Default for Move {
     }
 }
 
-impl Move {
+impl MoveDescriptor {
     /// Creates a new move from the given san and the position it was played in.
     pub fn from_san(
         san: SanPlus,
@@ -77,7 +77,7 @@ impl Move {
 
     /// Creates a new move from the given shakmaty move and the position it was played in.
     pub const fn from_move(
-        r#move: InternalMove,
+        r#move: Move,
         suffix: Option<Suffix>,
         color: Color,
     ) -> Result<Self, AttributeParsingError> {
@@ -142,21 +142,21 @@ impl Move {
     }
 }
 
-attribute_fmt!(Move, "SAN notation");
-attribute_err!(Move);
+attribute_fmt!(MoveDescriptor, "SAN notation");
+attribute_err!(MoveDescriptor);
 
 #[cfg(test)]
 mod test {
     use pgn_reader::Nag;
     use pretty_assertions::assert_eq;
-    use shakmaty::{Color, Move as InternalMove, Role, Square, san::Suffix};
+    use shakmaty::{Color, Move, Role, Square, san::Suffix};
 
     use crate::prelude::error::AttributeParsingError;
 
-    use super::Move;
+    use super::MoveDescriptor;
 
     /// Unwraps a move adding a nag to it, and turns it into its [`u32`] representation.
-    const fn unwrap_move(r#move: Result<Move, AttributeParsingError>, nag: u8) -> u32 {
+    const fn unwrap_move(r#move: Result<MoveDescriptor, AttributeParsingError>, nag: u8) -> u32 {
         if let Ok(mut r#move) = r#move {
             r#move.nag = Nag(nag);
             r#move.to_u32()
@@ -172,8 +172,8 @@ mod test {
         const TEST_CASES: [(u32, u32); 4] = [
             (
                 unwrap_move(
-                    Move::from_move(
-                        InternalMove::Normal {
+                    MoveDescriptor::from_move(
+                        Move::Normal {
                             role: Role::Rook,
                             from: Square::B2,
                             capture: Some(Role::Knight),
@@ -189,8 +189,8 @@ mod test {
             ),
             (
                 unwrap_move(
-                    Move::from_move(
-                        InternalMove::EnPassant {
+                    MoveDescriptor::from_move(
+                        Move::EnPassant {
                             from: Square::C3,
                             to: Square::D4,
                         },
@@ -203,8 +203,8 @@ mod test {
             ),
             (
                 unwrap_move(
-                    Move::from_move(
-                        InternalMove::Castle {
+                    MoveDescriptor::from_move(
+                        Move::Castle {
                             king: Square::E1,
                             rook: Square::A1,
                         },
@@ -217,8 +217,8 @@ mod test {
             ),
             (
                 unwrap_move(
-                    Move::from_move(
-                        InternalMove::Castle {
+                    MoveDescriptor::from_move(
+                        Move::Castle {
                             king: Square::E1,
                             rook: Square::H1,
                         },
