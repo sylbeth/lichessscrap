@@ -240,7 +240,8 @@ impl Data {
     pub fn end_game(&mut self) {
         match BoardConfiguration::from_board(self.game.chess.board()) {
             Ok(value) => self.game.final_conf = value,
-            Err(e) => {
+            Err((value, e)) => {
+                self.game.final_conf = value;
                 valuederror!(self, e);
             }
         };

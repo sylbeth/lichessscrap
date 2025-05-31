@@ -33,9 +33,16 @@ pub struct BoardConfiguration {
 
 impl BoardConfiguration {
     /// Constructs a [`BoardConfiguration`] based on a [`Board`] representation.
-    pub fn from_board(board: &Board) -> Result<BoardConfiguration, ValuedAttributeParsingError> {
+    ///
+    /// # Errors
+    /// Will return a [`ValuedAttributeParsingError`] if the number of pieces of any of the pieces is bigger than the expected maximum. It will also return the parsed [`BoardConfiguration`] with those said `pieces_left` set to all ones.
+    pub fn from_board(
+        board: &Board,
+    ) -> Result<BoardConfiguration, (BoardConfiguration, ValuedAttributeParsingError)> {
         let (black_bitboard, white_bitboard) = (board.black(), board.white());
-        let mut pieces_left = BoardConfiguration::default();
+        let mut configuration = BoardConfiguration::default();
+        let (mut black_err, mut white_err) = (None, None);
+
         for (pieces, (displacement, max, role)) in [
             board.pawns(),
             board.knights(),
@@ -48,38 +55,59 @@ impl BoardConfiguration {
         {
             let black_pieces = pieces.intersect(black_bitboard).count();
             if black_pieces <= max {
-                pieces_left.black_left |= (black_pieces as u16) << displacement;
+                configuration.black_left |= (black_pieces as u16) << displacement;
             } else {
-                return Err(ValuedAttributeParsingError::from_inner_utf8(
-                    ERROR,
-                    format!(
-                        "The number of black {}s is {black_pieces}, when it should be at most {max}.",
-                        role.upper_char()
-                    ),
+                black_err = Some(format!(
+                    "The number of black {}s is {black_pieces}, when it should be at most {max}.",
+                    role.upper_char()
                 ));
             }
             let white_pieces = pieces.intersect(white_bitboard).count();
             if white_pieces <= max {
-                pieces_left.white_left |= (white_pieces as u16) << displacement;
+                configuration.white_left |= (white_pieces as u16) << displacement;
             } else {
-                return Err(ValuedAttributeParsingError::from_inner_utf8(
-                    ERROR,
-                    format!(
-                        "The number of white {}s is {white_pieces}, when it should be at most {max}.",
-                        role.upper_char()
-                    ),
+                white_err = Some(format!(
+                    "The number of white {}s is {white_pieces}, when it should be at most {max}.",
+                    role.upper_char()
                 ));
             }
         }
-        pieces_left.pawns = board.pawns().0;
-        pieces_left.knights = board.knights().0;
-        pieces_left.bishops = board.bishops().0;
-        pieces_left.rooks = board.rooks().0;
-        pieces_left.queens = board.queens().0;
-        pieces_left.kings = board.kings().0;
-        pieces_left.blacks = board.black().0;
-        pieces_left.whites = board.white().0;
-        Ok(pieces_left)
+        configuration.pawns = board.pawns().0;
+        configuration.knights = board.knights().0;
+        configuration.bishops = board.bishops().0;
+        configuration.rooks = board.rooks().0;
+        configuration.queens = board.queens().0;
+        configuration.kings = board.kings().0;
+        configuration.blacks = board.black().0;
+        configuration.whites = board.white().0;
+
+        match (black_err, white_err) {
+            (Some(mut black_err), Some(white_err)) => {
+                configuration.black_left = u16::MAX;
+                configuration.white_left = u16::MAX;
+                black_err.push(' ');
+                black_err.push_str(&white_err);
+                Err((
+                    configuration,
+                    ValuedAttributeParsingError::from_inner_utf8(ERROR, black_err),
+                ))
+            }
+            (Some(black_err), None) => {
+                configuration.black_left = u16::MAX;
+                Err((
+                    configuration,
+                    ValuedAttributeParsingError::from_inner_utf8(ERROR, black_err),
+                ))
+            }
+            (None, Some(white_err)) => {
+                configuration.white_left = u16::MAX;
+                Err((
+                    configuration,
+                    ValuedAttributeParsingError::from_inner_utf8(ERROR, white_err),
+                ))
+            }
+            (None, None) => Ok(configuration),
+        }
     }
 
     /// Prepares the parameters for MySQL insertion and selection of this data.

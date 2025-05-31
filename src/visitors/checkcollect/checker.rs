@@ -256,7 +256,7 @@ impl Checker {
         }
         */
         #[cfg(feature = "full-check")]
-        if let Err(e) = BoardConfiguration::from_board(self.chess.board()) {
+        if let Err((_, e)) = BoardConfiguration::from_board(self.chess.board()) {
             valuederror!(self, e);
         };
     }
