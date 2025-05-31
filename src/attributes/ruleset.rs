@@ -2,7 +2,7 @@
 
 use std::{fmt::Display, str::from_utf8};
 
-use mysql::prelude::FromValue;
+use mysql::{Params, params, prelude::FromValue};
 
 use crate::{attribute_err, attribute_fmt};
 
@@ -75,6 +75,23 @@ impl RuleSet {
     /// Will return [`AttributeParsingError`] if it's not possible to parse this bytes slice into an [`RuleSet`].
     pub fn fill_ascii(&mut self, value: &[u8]) -> Result<(), AttributeParsingError> {
         self.fill_str(from_utf8(value).map_err(|_| ERROR)?)
+    }
+
+    /// Gets the parameters for MySQL insertion.
+    pub fn as_insert_params(&self) -> Params {
+        params! {
+            "name" => &self.name,
+            "url_id" => (!self.url.is_empty()).then_some(&self.url),
+            "kind" => self.kind,
+        }
+    }
+
+    /// Gets the parameters for MySQL selection.
+    pub fn as_select_params(&self) -> Params {
+        params! {
+            "name" => &self.name,
+            "url_id" => (!self.url.is_empty()).then_some(&self.url),
+        }
     }
 }
 

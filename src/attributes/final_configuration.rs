@@ -1,5 +1,6 @@
 //! Represents a position in a Lichess game. It holds Nag, suffix, and the whole characterization of the move.
 
+use mysql::{Params, params};
 use shakmaty::{Board, Role};
 
 use crate::{attribute_err, attribute_fmt};
@@ -79,6 +80,22 @@ impl FinalConfiguration {
         pieces_left.blacks = board.black().0;
         pieces_left.whites = board.white().0;
         Ok(pieces_left)
+    }
+
+    /// Gets the parameters for MySQL insertion and selection.
+    pub fn as_params(&self) -> Params {
+        params! {
+            "black_pieces" => self.black_left,
+            "white_pieces" => self.white_left,
+            "pawns" => self.pawns,
+            "knights" => self.knights,
+            "bishops" => self.bishops,
+            "rooks" => self.rooks,
+            "queens" => self.queens,
+            "kings" => self.kings,
+            "black" => self.blacks,
+            "white" => self.whites,
+        }
     }
 }
 
