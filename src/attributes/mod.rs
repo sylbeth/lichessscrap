@@ -3,11 +3,11 @@
 use std::fmt::Display;
 
 pub mod attribute;
+pub mod board_configuration;
 pub mod datetime;
 pub mod end;
 pub mod error;
 pub mod eval;
-pub mod final_configuration;
 pub mod move_descriptor;
 pub mod opening;
 pub mod player;
@@ -15,10 +15,10 @@ pub mod ruleset;
 pub mod time_control;
 
 pub use self::{
+    board_configuration::BoardConfiguration,
     datetime::{clk::Clk, date::Date, utc_date::UTCDate, utc_time::UTCTime},
     end::{result::Result, termination::Termination},
     eval::Eval,
-    final_configuration::FinalConfiguration,
     move_descriptor::MoveDescriptor,
     opening::{
         Opening,
@@ -47,7 +47,7 @@ pub enum AttributeKind {
     Eval,
     Clk,
     MoveDescriptor,
-    FinalConfiguration,
+    BoardConfiguration,
 }
 
 impl AttributeKind {
@@ -69,7 +69,7 @@ impl AttributeKind {
             Self::Eval => eval::FORMAT,
             Self::Clk => datetime::clk::FORMAT,
             Self::MoveDescriptor => move_descriptor::FORMAT,
-            Self::FinalConfiguration => final_configuration::FORMAT,
+            Self::BoardConfiguration => board_configuration::FORMAT,
         }
     }
 }
@@ -92,7 +92,7 @@ impl Display for AttributeKind {
             Self::Eval => "%eval",
             Self::Clk => "%clk",
             Self::MoveDescriptor => "move descriptor",
-            Self::FinalConfiguration => "final configuration",
+            Self::BoardConfiguration => "board configuration",
         }
         .fmt(f)
     }

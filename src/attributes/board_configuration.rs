@@ -1,4 +1,4 @@
-//! Represents a position in a Lichess game. It holds Nag, suffix, and the whole characterization of the move.
+//! Represents a board configuration in a Lichess game. It holds the number of pieces left for each color and the board position.
 
 use mysql::{Params, params};
 use shakmaty::{Board, Role};
@@ -18,7 +18,7 @@ const ROLE_DATA: [(u16, usize, Role); 5] = [
 
 /// Codified number of pieces left on the board.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub struct FinalConfiguration {
+pub struct BoardConfiguration {
     pub black_left: u16,
     pub white_left: u16,
     pub pawns: u64,
@@ -31,11 +31,11 @@ pub struct FinalConfiguration {
     pub blacks: u64,
 }
 
-impl FinalConfiguration {
-    /// Finds the number of pieces left on the board for each [`Color`](shakmaty::Color).
-    pub fn from_board(board: &Board) -> Result<FinalConfiguration, ValuedAttributeParsingError> {
+impl BoardConfiguration {
+    /// Constructs a [`BoardConfiguration`] based on a [`Board`] representation.
+    pub fn from_board(board: &Board) -> Result<BoardConfiguration, ValuedAttributeParsingError> {
         let (black_bitboard, white_bitboard) = (board.black(), board.white());
-        let mut pieces_left = FinalConfiguration::default();
+        let mut pieces_left = BoardConfiguration::default();
         for (pieces, (displacement, max, role)) in [
             board.pawns(),
             board.knights(),
@@ -82,7 +82,7 @@ impl FinalConfiguration {
         Ok(pieces_left)
     }
 
-    /// Gets the parameters for MySQL insertion and selection.
+    /// Prepares the parameters for MySQL insertion and selection of this data.
     pub fn as_params(&self) -> Params {
         params! {
             "black_pieces" => self.black_left,
@@ -100,7 +100,7 @@ impl FinalConfiguration {
 }
 
 attribute_fmt!(
-    PiecesLeft,
-    "3 bits for each piece and color, except the pawns, which need 4 bits."
+    BoardConfiguration,
+    "left pieces (3 bits for each piece and color, except the pawns, which need 4 bits) rows (8 rows, one of 32 bits, four bits for each square, the first bit being whether it's a white or a black piece and the following three coinciding with the value of shakmaty's Role enum)"
 );
-attribute_err!(FinalConfiguration);
+attribute_err!(BoardConfiguration);

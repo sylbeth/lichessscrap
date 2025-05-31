@@ -11,7 +11,7 @@ use shakmaty::{Outcome, Position};
 
 use super::{
     attributes::{
-        Clk, Eco, Elo, Eval, FinalConfiguration, Result as ResultAttr, Termination, TimeControl,
+        BoardConfiguration, Clk, Eco, Elo, Eval, Result as ResultAttr, Termination, TimeControl,
         Title, UTCDate, UTCTime,
         attribute::StringAttribute,
         error::ValuedAttributeParsingError,
@@ -240,7 +240,7 @@ impl Data {
 
     /// Properly ends and processes the data of the game.
     pub fn end_game(&mut self) {
-        match FinalConfiguration::from_board(self.game.chess.board()) {
+        match BoardConfiguration::from_board(self.game.chess.board()) {
             Ok(value) => self.game.final_conf = value,
             Err(e) => {
                 valuederror!(self, e);

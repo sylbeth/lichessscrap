@@ -1,5 +1,5 @@
 use lichess::{
-    attributes::{Eco, FinalConfiguration, Opening, Player, RuleSet},
+    attributes::{Eco, BoardConfiguration, Opening, Player, RuleSet},
     data::{Data, Game, Move},
 };
 use log::{info, trace};
@@ -92,7 +92,7 @@ pub fn initialize_database_if_not_exists(db_password: &str) -> Result<Conn, Erro
 #[allow(dead_code)]
 pub fn insert_final_configuration(
     conn: &mut Conn,
-    final_configuration: &FinalConfiguration,
+    final_configuration: &BoardConfiguration,
 ) -> Result<u64, Error> {
     let params = final_configuration.as_params();
     match conn.exec_iter(include_str!("sql/insert-finalconf.sql"), &params) {

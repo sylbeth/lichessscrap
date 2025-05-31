@@ -7,7 +7,7 @@ use crate::attributes::{
     //Date,
     Eco,
     Elo,
-    FinalConfiguration,
+    BoardConfiguration,
     Opening,
     Player,
     Result,
@@ -86,7 +86,7 @@ pub struct Game {
     pub chess: Chess,
 
     /// The pieces left at the end of the game.
-    pub final_conf: FinalConfiguration,
+    pub final_conf: BoardConfiguration,
 }
 
 impl Game {
@@ -122,10 +122,10 @@ impl Game {
 
         self.chess = Chess::default();
 
-        self.final_conf = FinalConfiguration::default();
+        self.final_conf = BoardConfiguration::default();
     }
 
-    /// Gets the parameters for MySQL insertion.
+    /// Prepares the parameters for MySQL insertion of this data.
     pub fn as_params(
         &self,
         ruleset_id: u64,
