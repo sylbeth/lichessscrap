@@ -46,6 +46,8 @@ pub struct Checker {
     current_result: ResultAttr,
     /// Current termination of the visit.
     current_termination: Termination,
+    /// Current ruleset of the visit.
+    current_ruleset: RuleSet,
     /// Current date of the visit, either UTCDate or Date, whichever came first.
     current_date: Option<lichess::attributes::datetime::Date>,
     /// Whether [`UTCDate`] or [`Date`] appear first.
@@ -114,6 +116,7 @@ impl Checker {
 
         self.current_result = ResultAttr::Null;
         self.current_termination = Termination::Unterminated;
+        self.current_ruleset.reset();
         self.current_date = None;
         self.current_opening.clear();
         self.current_player.clear();
@@ -358,7 +361,7 @@ impl Checker {
             }
             EVENT => {
                 self.event = true;
-                if let Err(e) = RuleSet::try_from(value) {
+                if let Err(e) = self.current_ruleset.fill_ascii(value) {
                     valuederror!(self, e);
                 }
             }

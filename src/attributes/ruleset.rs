@@ -4,7 +4,7 @@ use std::{fmt::Display, str::from_utf8};
 
 use mysql::prelude::FromValue;
 
-use crate::tattribute;
+use crate::{attribute_err, attribute_fmt};
 
 use super::error::AttributeParsingError;
 
@@ -30,15 +30,16 @@ impl RuleSet {
     ///
     /// # Errors
     /// Will return [`AttributeParsingError`] if it's not possible to parse this string slice into an [`Elo`].
-    pub fn from_str(value: &str) -> Result<Self, AttributeParsingError> {
+    pub fn fill_str(&mut self, value: &str) -> Result<(), AttributeParsingError> {
         let mut split_iter = value.split_terminator(' ').rev();
         if let Some(last_split) = split_iter.next() {
             if last_split == "game" {
-                Ok(Self {
-                    name: split_iter.rev().collect::<Vec<&str>>().join(" "),
-                    kind: RuleSetKind::Game,
-                    url: String::new(),
-                })
+                for part in split_iter.rev() {
+                    self.name.push_str(part);
+                    self.name.push(' ');
+                }
+                self.name.pop();
+                Ok(())
             } else if last_split.starts_with("https") {
                 let mut peek_split = split_iter.peekable();
                 let kind = match peek_split
@@ -48,16 +49,18 @@ impl RuleSet {
                     Some("swiss") => RuleSetKind::Swiss,
                     _ => return Err(ERROR),
                 };
-                Ok(Self {
-                    name: peek_split.rev().collect::<Vec<&str>>().join(" "),
-                    kind,
-                    url: last_split
-                        .split_terminator('/')
-                        .rev()
-                        .next()
-                        .map(Into::into)
-                        .unwrap_or_default(),
-                })
+                for part in peek_split.rev() {
+                    self.name.push_str(part);
+                    self.name.push(' ');
+                }
+                self.name.pop();
+                self.kind = kind;
+                last_split
+                    .split_terminator('/')
+                    .rev()
+                    .next()
+                    .map(|value| self.url.push_str(value));
+                Ok(())
             } else {
                 Err(ERROR)
             }
@@ -70,8 +73,8 @@ impl RuleSet {
     ///
     /// # Errors
     /// Will return [`AttributeParsingError`] if it's not possible to parse this bytes slice into an [`RuleSet`].
-    pub fn from_ascii(value: &[u8]) -> Result<Self, AttributeParsingError> {
-        Self::from_str(from_utf8(value).map_err(|_| ERROR)?)
+    pub fn fill_ascii(&mut self, value: &[u8]) -> Result<(), AttributeParsingError> {
+        self.fill_str(from_utf8(value).map_err(|_| ERROR)?)
     }
 }
 
@@ -110,4 +113,5 @@ impl Display for RuleSet {
     }
 }
 
-tattribute!(RuleSet, "{str} <game|tournament|swiss>[ {url}]");
+attribute_fmt!(RuleSet, "{str} <game|tournament|swiss>[ {url}]");
+attribute_err!(RuleSet);

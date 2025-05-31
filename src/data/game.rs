@@ -97,7 +97,7 @@ impl Game {
         self.opening.clear();
         self.eco = Eco::default();
 
-        self.ruleset = RuleSet::default();
+        self.ruleset.reset();
         //self.round;
 
         self.black.clear();
