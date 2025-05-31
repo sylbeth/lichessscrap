@@ -38,10 +38,6 @@ impl CheckerCollector {
 impl Visitor for CheckerCollector {
     type Result = ();
 
-    fn begin_game(&mut self) {
-        self.checker.new_game();
-    }
-
     fn header(&mut self, _key: &[u8], _value: RawHeader<'_>) {
         self.collector.collect_header(_key);
         self.checker.check_header(_key, _value.0);

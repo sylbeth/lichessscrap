@@ -256,7 +256,7 @@ impl Checker {
         match key {
             SITE => {
                 self.site = true;
-                if let Err(_) = from_utf8(value) {
+                if from_utf8(value).is_err() {
                     error!(
                         "{} - Site is not UTF-8: {} <- {:?}",
                         self.games,
@@ -466,10 +466,6 @@ impl Checker {
 impl Visitor for Checker {
     type Result = ();
 
-    fn begin_game(&mut self) {
-        self.new_game();
-    }
-
     fn header(&mut self, _key: &[u8], _value: RawHeader<'_>) {
         self.check_header(_key, _value.0);
     }
@@ -502,6 +498,7 @@ impl Visitor for Checker {
 
     fn end_game(&mut self) {
         self.check_game();
+        self.new_game();
         if self.games % 1000000 == 0 {
             info!("Checked {} games.", self.games);
         }
