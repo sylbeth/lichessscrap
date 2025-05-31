@@ -17,16 +17,24 @@ const ROLE_DATA: [(u16, usize, Role); 5] = [
 
 /// Codified number of pieces left on the board.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub struct PiecesLeft {
-    pub black: u16,
-    pub white: u16,
+pub struct FinalConfiguration {
+    pub black_left: u16,
+    pub white_left: u16,
+    pub pawns: u64,
+    pub knights: u64,
+    pub bishops: u64,
+    pub rooks: u64,
+    pub queens: u64,
+    pub kings: u64,
+    pub whites: u64,
+    pub blacks: u64,
 }
 
-impl PiecesLeft {
+impl FinalConfiguration {
     /// Finds the number of pieces left on the board for each [`Color`](shakmaty::Color).
-    pub fn from_board(board: Board) -> Result<PiecesLeft, ValuedAttributeParsingError> {
+    pub fn from_board(board: Board) -> Result<FinalConfiguration, ValuedAttributeParsingError> {
         let (black_bitboard, white_bitboard) = (board.black(), board.white());
-        let mut pieces_left = PiecesLeft::default();
+        let mut pieces_left = FinalConfiguration::default();
         for (pieces, (displacement, max, role)) in [
             board.pawns(),
             board.knights(),
@@ -39,7 +47,7 @@ impl PiecesLeft {
         {
             let black_pieces = pieces.intersect(black_bitboard).count();
             if black_pieces <= max {
-                pieces_left.black |= (black_pieces as u16) << displacement;
+                pieces_left.black_left |= (black_pieces as u16) << displacement;
             } else {
                 return Err(ValuedAttributeParsingError::from_inner_utf8(
                     ERROR,
@@ -51,7 +59,7 @@ impl PiecesLeft {
             }
             let white_pieces = pieces.intersect(white_bitboard).count();
             if white_pieces <= max {
-                pieces_left.white |= (white_pieces as u16) << displacement;
+                pieces_left.white_left |= (white_pieces as u16) << displacement;
             } else {
                 return Err(ValuedAttributeParsingError::from_inner_utf8(
                     ERROR,
@@ -62,6 +70,14 @@ impl PiecesLeft {
                 ));
             }
         }
+        pieces_left.pawns = board.pawns().0;
+        pieces_left.knights = board.knights().0;
+        pieces_left.bishops = board.bishops().0;
+        pieces_left.rooks = board.rooks().0;
+        pieces_left.queens = board.queens().0;
+        pieces_left.kings = board.kings().0;
+        pieces_left.blacks = board.black().0;
+        pieces_left.whites = board.white().0;
         Ok(pieces_left)
     }
 }
@@ -70,4 +86,4 @@ attribute_fmt!(
     PiecesLeft,
     "3 bits for each piece and color, except the pawns, which need 4 bits."
 );
-attribute_err!(PiecesLeft);
+attribute_err!(FinalConfiguration);

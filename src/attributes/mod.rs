@@ -9,7 +9,7 @@ pub mod error;
 pub mod eval;
 pub mod r#move;
 pub mod opening;
-pub mod pieces;
+pub mod final_configuration;
 pub mod player;
 pub mod ruleset;
 pub mod time_control;
@@ -23,7 +23,7 @@ pub use self::{
         Opening,
         eco::{Eco, EcoChar},
     },
-    pieces::PiecesLeft,
+    final_configuration::FinalConfiguration,
     player::{Player, elo::Elo, title::Title},
     ruleset::RuleSet,
     time_control::TimeControl,
@@ -47,7 +47,7 @@ pub enum AttributeKind {
     Eval,
     Clk,
     Move,
-    PiecesLeft,
+    FinalConfiguration,
 }
 
 impl AttributeKind {
@@ -69,7 +69,7 @@ impl AttributeKind {
             Self::Eval => eval::FORMAT,
             Self::Clk => datetime::clk::FORMAT,
             Self::Move => r#move::FORMAT,
-            Self::PiecesLeft => pieces::FORMAT,
+            Self::FinalConfiguration => final_configuration::FORMAT,
         }
     }
 }
@@ -92,7 +92,7 @@ impl Display for AttributeKind {
             Self::Eval => "%eval",
             Self::Clk => "%clk",
             Self::Move => "move",
-            Self::PiecesLeft => "pieces left",
+            Self::FinalConfiguration => "final configuration",
         }
         .fmt(f)
     }

@@ -6,8 +6,8 @@ use crate::attributes::{
     //Date,
     Eco,
     Elo,
+    FinalConfiguration,
     Opening,
-    PiecesLeft,
     Player,
     Result,
     RuleSet,
@@ -48,12 +48,11 @@ pub struct Game {
 
     /// The ruleset this game was played under.
     pub ruleset: RuleSet,
-    
+
     /*
     /// The round of the game.
     pub round: (),
     */
-
     /// The username of the black player.
     pub black: Player,
     /// The elo of the black player.
@@ -80,7 +79,7 @@ pub struct Game {
     pub chess: Chess,
 
     /// The pieces left at the end of the game.
-    pub pieces_left: PiecesLeft,
+    pub final_conf: FinalConfiguration,
 }
 
 impl Game {
@@ -113,7 +112,6 @@ impl Game {
 
         self.chess = Chess::default();
 
-        self.pieces_left.black = 0;
-        self.pieces_left.white = 0;
+        self.final_conf = FinalConfiguration::default();
     }
 }
