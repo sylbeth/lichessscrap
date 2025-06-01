@@ -397,7 +397,7 @@ impl<R: Read> PGNSampler<R> {
                 if prev + 1 == double {
                     self.game_counter += 1;
                     if self.game_counter & 0x7FFFFF == 0 {
-                        info!("Iterated over {} games, processed.", self.game_counter >> 1);
+                        info!("Iterated over {} games.", self.game_counter >> 1);
                     }
                     if self.game_counter == current_game {
                         self.reader.consume(double + 1);
