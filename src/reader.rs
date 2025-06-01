@@ -72,6 +72,7 @@ impl PGNReader {
     }
 }
 
+/*
 /// Finds the number of games in the given file.
 fn find_games_aux<R: Read>(reader: R) -> Result<usize, Box<dyn Error>> {
     trace!("find_games_aux function.");
@@ -79,22 +80,108 @@ fn find_games_aux<R: Read>(reader: R) -> Result<usize, Box<dyn Error>> {
     let mut count = 0;
     let mut n;
     let mut reader = BufReader::new(reader);
-    let mut line = Vec::new();
 
     loop {
-        n = reader.read_until(b'\n', &mut line)?;
+        n = reader.skip_until(b'\n')?;
         if n == 0 {
-            // Given that right shift truncates the last bit, we just want to ensure that if it's odd it is added 1 (there has been a formatting error) and if not it stays the same.
-            return Ok((count + 1) >> 1);
-        } else if (n == 1) & (line[0] == b'\n') {
+            return Ok(count >> 1);
+        } else if n == 1 {
             count += 1;
-            if count % 1000000 == 0 {
-                info!("Scanned {count} games.");
+            if count & 0x7FFFFF == 0 {
+                info!("Scanned {} games.", count >> 1);
             }
         }
-        line.clear();
     }
 }
+*/
+
+fn find_games_aux<R: Read>(reader: R) -> Result<usize, Box<dyn Error>> {
+    trace!("find_games_aux function.");
+    debug!("{}", type_name_of_val(&reader));
+
+    let mut count = 0;
+    let mut prev = 0;
+    let mut len = 0;
+    let mut reader = BufReader::with_capacity(1 << 15, reader);
+    let mut buff;
+
+    loop {
+        buff = reader.fill_buf()?;
+        if prev + 1 == len {
+            if let Some(first) = buff.first() {
+                if *first == b'\n' {
+                    count += 1;
+                    if count & 0x7FFFFF == 0 {
+                        info!("Scanned {} games.", count >> 1);
+                    }
+                }
+            }
+        }
+        len = buff.len();
+        prev = len;
+        for double in memchr::memchr_iter(b'\n', buff) {
+            if prev + 1 == double {
+                count += 1;
+                if count & 0x7FFFFF == 0 {
+                    info!("Scanned {} games.", count >> 1);
+                }
+            }
+            prev = double
+        }
+        if prev == len {
+            return Ok(count >> 1);
+        } else {
+            reader.consume(len);
+        }
+    }
+}
+
+/*
+/// Finds the number of games in the given file.
+fn find_games_aux<R: Read>(reader: R) -> Result<usize, Box<dyn Error>> {
+    trace!("find_games_aux function.");
+    debug!("{}", type_name_of_val(&reader));
+
+    let mut count = 0;
+    let mut current;
+    let mut len;
+    let mut last_char_jump = false;
+    let mut reader = BufReader::with_capacity(1 << 15, reader);
+    let mut buff;
+
+    loop {
+        current = 0;
+        buff = reader.fill_buf()?;
+        len = buff.len();
+        if last_char_jump {
+            if let Some(first) = buff.first() {
+                if *first == b'\n' {
+                    count += 1;
+                    if count & 0x7FFFFF == 0 {
+                        info!("Scanned {} games.", count >> 1);
+                    }
+                }
+            }
+        }
+        last_char_jump = false;
+        for double in memchr::memmem::find_iter(buff, b"\n\n") {
+            count += 1;
+            if count & 0x7FFFFF == 0 {
+                info!("Scanned {} games.", count >> 1);
+            }
+            current = double
+        }
+        if current == 0 {
+            return Ok(count >> 1);
+        } else {
+            if buff[len - 1] == b'\n' {
+                last_char_jump = true;
+            }
+            reader.consume(len);
+        }
+    }
+}
+*/
 
 /// Finds the number of games in the given file.
 pub fn find_games<P: AsRef<Path> + Debug>(path: P) -> Result<usize, Box<dyn Error>> {
