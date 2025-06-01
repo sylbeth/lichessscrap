@@ -68,6 +68,9 @@ impl Default for MoveDescriptor {
 
 impl MoveDescriptor {
     /// Creates a new move from the given san and the position it was played in.
+    ///
+    /// # Errors
+    /// Will return [`ValuedAttributeParsingError`] if the given [`SanPlus`] is not valid in for this [`Position`] or if it results in a [`Move::Put`].
     pub fn from_san(
         san: SanPlus,
         pos: &impl Position,
@@ -86,6 +89,9 @@ impl MoveDescriptor {
     }
 
     /// Creates a new move from the given shakmaty move and the position it was played in.
+    ///
+    /// # Errors
+    /// Will return [`AttributeParsingError`] if the given [`Move`] is a [`Move::Put`].
     pub const fn from_move(
         r#move: Move,
         suffix: Option<Suffix>,

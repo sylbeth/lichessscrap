@@ -37,6 +37,9 @@ pub struct CLIArgs {
 
 impl CLIArgs {
     /// Parses the command line arguments alongside the argfile and initializes the loggers.
+    /// 
+    /// # Errors
+    /// Will return a [`Box`]ed [`Error`] if the parsing of arguments failed or the logging failed to initialize.
     pub fn parse_all() -> Result<Self, Box<dyn Error>> {
         let args = Self::parse_from(expand_args(parse_fromfile, FROMFILE_PREFIX)?);
         args.init_loggers()?;
