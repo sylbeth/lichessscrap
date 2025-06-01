@@ -72,7 +72,7 @@ impl MoveDescriptor {
     /// # Errors
     /// Will return [`ValuedAttributeParsingError`] if the given [`SanPlus`] is not valid in for this [`Position`] or if it results in a [`Move::Put`].
     pub fn from_san(
-        san: SanPlus,
+        san: &SanPlus,
         pos: &impl Position,
     ) -> Result<Self, ValuedAttributeParsingError> {
         match san.san.to_move(pos) {
@@ -85,6 +85,31 @@ impl MoveDescriptor {
                 nag: Nag(0),
                 color: pos.turn(),
             }),
+        }
+    }
+
+    /// Creates and plays new move from the given san and the position it was played in.
+    ///
+    /// # Errors
+    /// Will return [`ValuedAttributeParsingError`] if the given [`SanPlus`] is not valid in for this [`Position`] or if it results in a [`Move::Put`].
+    pub fn from_and_play_san(
+        san: &SanPlus,
+        pos: &mut impl Position,
+    ) -> Result<Self, ValuedAttributeParsingError> {
+        match san.san.to_move(pos) {
+            Err(_) | Ok(Put { role: _, to: _ }) => Err(
+                ValuedAttributeParsingError::from_inner_utf8(ERROR, san.to_string()),
+            ),
+            Ok(r#move) => {
+                let color = pos.turn();
+                pos.play_unchecked(&r#move);
+                Ok(Self {
+                    r#move,
+                    suffix: san.suffix,
+                    nag: Nag(0),
+                    color,
+                })
+            }
         }
     }
 

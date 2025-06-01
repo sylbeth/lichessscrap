@@ -16,8 +16,8 @@ use shakmaty::{Chess, Position};
 use crate::visitors::comment_iterator::CommentIterator;
 use lichess::{
     attributes::{
-        Clk, Date, Eco, Elo, Eval, Opening, Player, Result as ResultAttr, RuleSet, Termination,
-        TimeControl, Title, UTCDate, UTCTime, attribute::StringAttribute,
+        Clk, Date, Eco, Elo, Eval, MoveDescriptor, Opening, Player, Result as ResultAttr, RuleSet,
+        Termination, TimeControl, Title, UTCDate, UTCTime, attribute::StringAttribute,
     },
     constants::{
         comments::{CLK, EVAL},
@@ -483,12 +483,10 @@ impl Visitor for Checker {
     #[cfg(feature = "full-check")]
     fn san(&mut self, _san: SanPlus) {
         self.moves += 1;
-        if let Ok(mv) = _san.san.to_move(&self.chess) {
-            self.chess.play_unchecked(&mv);
-        } else {
+        if let Err(_) = MoveDescriptor::from_and_play_san(&_san, &mut self.chess) {
             error!(
-                "{}.{} - Invalid SAN move played: {}",
-                self.games, self.moves, _san,
+                "{}.{} - Invalid SAN move played: {_san}",
+                self.games, self.moves
             );
             self.has_errors = true;
         }

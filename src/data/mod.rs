@@ -10,10 +10,7 @@ use shakmaty::{Outcome, Position};
 use super::{
     attributes::{
         BoardConfiguration, Clk, Eco, Elo, Eval, Result as ResultAttr, Termination, TimeControl,
-        Title, UTCDate, UTCTime,
-        attribute::StringAttribute,
-        error::ValuedAttributeParsingError,
-        move_descriptor::{self, MoveDescriptor},
+        Title, UTCDate, UTCTime, attribute::StringAttribute, move_descriptor::MoveDescriptor,
     },
     constants::{
         comments::{CLK, EVAL},
@@ -72,29 +69,17 @@ impl Data {
             self.moves.push(self.r#move.clone());
         }
         self.r#move.next();
-        let current_move = if let Ok(r#move) = san.san.to_move(&self.game.chess) {
-            r#move
-        } else {
-            let e = ValuedAttributeParsingError::from_inner_utf8(
-                move_descriptor::ERROR,
-                format!("{san} at move {} of game {}", self.r#move.num, self.games),
-            );
-            valuederror!(self, e);
-            return;
-        };
-        let color = self.game.chess.turn();
-        self.game.chess.play_unchecked(&current_move);
-        self.r#move.descriptor = match MoveDescriptor::from_move(current_move, san.suffix, color) {
-            Ok(descriptor) => descriptor,
-            Err(e) => {
-                let e = ValuedAttributeParsingError::from_inner_utf8(
-                    e,
-                    format!("{san} at move {} of game {}", self.r#move.num, self.games),
+
+        match MoveDescriptor::from_and_play_san(&san, &mut self.game.chess) {
+            Ok(value) => self.r#move.descriptor = value,
+            Err(_) => {
+                error!(
+                    "{}.{} - Invalid SAN move played: {san}",
+                    self.games, self.r#move.num
                 );
-                valuederror!(self, e);
-                return;
+                self.has_errors = true;
             }
-        };
+        }
     }
 
     /// Processes the comment of a move, parsing the values of its fields.
