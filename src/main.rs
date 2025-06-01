@@ -1,53 +1,35 @@
 //! Main module of the scrapper, which handles the parsing of the CLI arguments, opens the data file and processes it.
 
 use std::{
+    env,
     error::Error,
     fs::File,
-    io::{BufWriter, stdout},
+    io::{self, BufWriter, stdout},
 };
 
+use dotenvy::{dotenv, from_filename as dotenv_from_filename};
 use log::{debug, info, trace, warn};
-use rand::{rng, seq::index::sample};
 
 use args::CLIArgs;
+use pgn_reader::BufferedReader;
 use reader::PGNReader;
-use visitors::{
-    checkcollect::{CheckerCollector, checker::Checker},
-    stats::Stats,
+use visitors::checkcollect::{CheckerCollector, checker::Checker};
+
+use crate::{
+    reader::{PGNSampler, find_games},
+    visitors::database::Database,
 };
 
 mod args;
+mod database;
 mod reader;
 mod visitors;
 
-/// The part of the entire games that will be used for sampling. If there are `N` games, then the sample will consist of `N/GAMES_SAMPLE_DIVISOR` games.
-const GAMES_SAMPLE_DIVISOR: usize = 1000;
+/// Crawls the file and analyzes it completely.
+fn full_crawling(args: CLIArgs) -> Result<(), Box<dyn Error>> {
+    trace!("full_crawling function.");
+    info!("Commencing crawling of the file wile analyzing it fully.");
 
-/// Main function of the scrapper.
-fn main() -> Result<(), Box<dyn Error>> {
-    let args = CLIArgs::parse_all()?;
-    #[cfg(feature = "full-collect")]
-    info!("Feature full-collect is active.");
-    #[cfg(feature = "full-check")]
-    info!("Feature full-check is active.");
-    #[cfg(feature = "chrono")]
-    info!("Feature chrono is active.");
-    #[cfg(feature = "time")]
-    info!("Feature time is active.");
-    #[cfg(feature = "csv")]
-    info!("Feature csv is active.");
-    #[cfg(feature = "chrono-serde")]
-    info!("Feature chrono-serde is active.");
-    #[cfg(feature = "time-serde")]
-    info!("Feature time-serde is active.");
-    #[cfg(feature = "memchr")]
-    info!("Feature memchr is active.");
-    #[cfg(feature = "zstd")]
-    info!("Feature zstd is active.");
-    trace!("main function.");
-    debug!("{args:?}");
-
-    let mut games = args.games;
     let mut checking_errors = false;
 
     if args.consistency.check {
@@ -77,8 +59,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             debug!("{checker:?}");
             checker
         };
-        games = Some(checker.games);
-        info!("Total games read: {}", checker.games);
         checking_errors = checker.has_errors;
         if checker.has_errors {
             warn!("The checking finished with errors.")
@@ -95,30 +75,189 @@ fn main() -> Result<(), Box<dyn Error>> {
         return Err("There were errors during the check process.".into());
     }
 
-    if let Some((db_password, op_mode)) = args.database.db_password.zip(args.database.op_mode) {
-        info!(
-            "Inserting the PGN file's data into the database with mode {:?}.",
-            op_mode
-        );
-        let games = if let Some(games) = games {
-            warn!(
-                "Number of games provided, if incorrect would result to erroneous data sample collection."
-            );
-            games
+    if let Ok(db_url) = env::var("DATABASE_URL") {
+        info!("Inserting the full PGN file's data into the database.");
+        let mut pgn = PGNReader::new(&args.pgn_file)?;
+        let mut db_serializer = Database::new(&db_url)?;
+        pgn.read_all(&mut db_serializer)?;
+        if db_serializer.has_errors {
+            warn!("The database insertion finished with insertion errors.");
+        } else if db_serializer.data.has_errors {
+            warn!("The database insertion finished with parsing errors.");
         } else {
-            info!("Number of games not provided, will proceed to read the file to count it.");
-            let mut stats = Stats::default();
-            let mut pgn = PGNReader::new(&args.pgn_file)?;
-            pgn.read_all(&mut stats)?;
-            info!("Counting finished.");
-            debug!("{stats:?}");
-            stats.log();
-            stats.games
-        };
-        info!("Database insertion finished.");
+            info!("The database insertion finished without errors.");
+        }
     }
 
-    info!("Program finished.");
+    info!("Full crawling finished.");
 
     Ok(())
+}
+
+/// Crawls the file while only analyzing a given sample.
+fn sample_crawling(args: CLIArgs, sample: usize) -> Result<(), Box<dyn Error>> {
+    trace!("sample_crawling function.");
+    info!("Commencing crawling of the file wile analyzing only a sample.");
+
+    let games = if let Some(games) = args.database.games {
+        games
+    } else {
+        find_games(&args.pgn_file)?
+    };
+
+    info!("The file contains {games} games.");
+
+    if let Some(ext) = args.pgn_file.extension() {
+        if ext == "zst" {
+            #[cfg(feature = "zstd")]
+            {
+                use zstd::Decoder;
+
+                let mut sampler = PGNSampler::new(
+                    Decoder::new(File::open(&args.pgn_file)?)?,
+                    sample,
+                    games,
+                    &args.pgn_file,
+                );
+                info!("Starting the insertion of the sample.");
+                if let Ok(db_url) = env::var("DATABASE_URL") {
+                    let mut database = Database::new(&db_url)?;
+                    let mut cursor;
+                    if args.consistency.check {
+                        let mut checker = Checker::default();
+                        while sampler.fill_next_game()? {
+                            cursor = BufferedReader::new_cursor(&sampler.current_data);
+                            cursor.read_game(&mut checker)?;
+                            if checker.has_errors & !args.database.force_insert {
+                                info!(
+                                    "Since there were errors during the check, the program will stop."
+                                );
+                                info!(
+                                    "If this is not the intended behaviour, consider using the flag \"-f\"/\"--force-insert\"."
+                                );
+                                return Err("There were errors during the check process.".into());
+                            }
+                            cursor = BufferedReader::new_cursor(&sampler.current_data);
+                            cursor.read_game(&mut database)?;
+                        }
+                    } else {
+                        while sampler.fill_next_game()? {
+                            cursor = BufferedReader::new_cursor(&sampler.current_data);
+                            cursor.read_game(&mut database)?;
+                        }
+                    }
+                    info!("Finished processing the sample.");
+                    Ok(())
+                } else {
+                    Err(Box::new(io::Error::new(
+                        io::ErrorKind::NotFound,
+                        "The database url was not found. Please provide the environment variable DATABASE_URL as mysql://user:password@localhost, for example, through a .env file.",
+                    )))
+                }
+            }
+            #[cfg(not(feature = "zstd"))]
+            Err(Box::new(io::Error::new(
+                io::ErrorKind::Unsupported,
+                "The feature zstd must be active to be able to read a zstd file",
+            )))
+        } else if ext == "pgn" {
+            let mut sampler =
+                PGNSampler::new(File::open(&args.pgn_file)?, sample, games, &args.pgn_file);
+            info!("Starting the insertion of the sample.");
+            if let Ok(db_url) = env::var("DATABASE_URL") {
+                let mut database = Database::new(&db_url)?;
+                let mut cursor;
+                if args.consistency.check {
+                    let mut checker = Checker::default();
+                    while sampler.fill_next_game()? {
+                        cursor = BufferedReader::new_cursor(&sampler.current_data);
+                        cursor.read_game(&mut checker)?;
+                        if checker.has_errors & !args.database.force_insert {
+                            info!(
+                                "Since there were errors during the check, the program will stop."
+                            );
+                            info!(
+                                "If this is not the intended behaviour, consider using the flag \"-f\"/\"--force-insert\"."
+                            );
+                            return Err("There were errors during the check process.".into());
+                        }
+                        cursor = BufferedReader::new_cursor(&sampler.current_data);
+                        cursor.read_game(&mut database)?;
+                    }
+                } else {
+                    while sampler.fill_next_game()? {
+                        cursor = BufferedReader::new_cursor(&sampler.current_data);
+                        cursor.read_game(&mut database)?;
+                    }
+                }
+                info!("Finished processing the sample.");
+                Ok(())
+            } else {
+                Err(Box::new(io::Error::new(
+                    io::ErrorKind::NotFound,
+                    "The database url was not found. Please provide the environment variable DATABASE_URL as mysql://user:password@localhost, for example, through a .env file.",
+                )))
+            }
+        } else {
+            Err(Box::new(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Only zstd and pgn files are allowed",
+            )))
+        }
+    } else {
+        Err(Box::new(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Only zstd and pgn files are allowed",
+        )))
+    }
+}
+
+/// Main function of the scrapper.
+fn main() -> Result<(), Box<dyn Error>> {
+    let args = CLIArgs::parse_all()?;
+    #[cfg(feature = "full-collect")]
+    info!("Feature full-collect is active.");
+    #[cfg(feature = "full-check")]
+    info!("Feature full-check is active.");
+    #[cfg(feature = "zstd")]
+    info!("Feature zstd is active.");
+    #[cfg(feature = "chrono")]
+    info!("Feature chrono is active.");
+    #[cfg(feature = "time")]
+    info!("Feature time is active.");
+    #[cfg(feature = "csv")]
+    info!("Feature csv is active.");
+    #[cfg(feature = "chrono-serde")]
+    info!("Feature chrono-serde is active.");
+    #[cfg(feature = "time-serde")]
+    info!("Feature time-serde is active.");
+    #[cfg(feature = "chrono-mysql")]
+    info!("Feature chrono-mysql is active.");
+    #[cfg(feature = "time-mysql")]
+    info!("Feature time-mysql is active.");
+    #[cfg(feature = "chrono-diesel")]
+    info!("Feature chrono-diesel is active.");
+    #[cfg(feature = "time-diesel")]
+    info!("Feature time-diesel is active.");
+    trace!("main function.");
+    debug!("{args:?}");
+
+    if let Some(envfile) = &args.database.db_envfile {
+        info!("Reading dotenv from given file.");
+        dotenv_from_filename(envfile)?;
+        info!("dotenv file read.");
+    } else {
+        info!("Reading dotenv.");
+        if dotenv().is_ok() {
+            info!("dotenv file not found, proceeding with checking.");
+        } else {
+            info!("dotenv file read.");
+        }
+    }
+
+    if let Some(sample) = args.database.sample {
+        sample_crawling(args, sample)
+    } else {
+        full_crawling(args)
+    }
 }
