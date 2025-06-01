@@ -1,2 +1,2 @@
-INSERT INTO FinalConfiguration (EndBlackPieces, EndWhitePieces, EndPawns, EndKnights, EndBishops, EndRooks, EndQueens, EndKings, EndBlack, EndWhite)
-VALUES (:black_pieces, :white_pieces, :pawns, :knights, :bishops, :rooks, :queens, :kings, :black, :white);
+INSERT INTO FinalConfiguration (EndBlackPieces, EndWhitePieces, ARow, BRow, CRow, DRow, ERow, FRow, GRow, HRow)
+VALUES (:black_pieces, :white_pieces, :a_row, :b_row, :c_row, :d_row, :e_row, :f_row, :g_row, :h_row);

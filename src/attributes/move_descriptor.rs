@@ -1,14 +1,14 @@
 //! Represents a move made in a Lichess game. It holds Nag, suffix, and the whole characterization of the move. It is used to turn it into a u32 descriptor of a move with the following formatting:
 //!
-//! `player` (31st bit - 1 total) - 0 for the black player, 1 for the white player.
-//! `moved_role` (30th-28th bits - 3 total) - The role of the moved piece.
-//! `starting_square` (27th-22nd bits - 6 total) - The starting square of the move.
-//! `captured_role` (21st-19th bits - 3 total) - The role of the captured piece. 7 for En-Passant.
-//! `ending_square` (18th-13th bits - 6 total) - The ending square of the move, or the rook's square if it's a castling.
-//! `promoted_role` (12th-10th bits - 3 total) - The role of the promoted piece. 6 and 7 for castling (King and Queen side, respectively).
-//! `is_check` (9th bit - 1 total) - Whether it's check or not.
-//! `is_checkmate` (8th bit - 1 total) - Whether it's checkmate or not.
-//! `nag` (7th-0th bits - 8 total) - The value of the nag.
+//! - `player` (31st bit - 1 total) - 0 for the black player, 1 for the white player.
+//! - `moved_role` (30th-28th bits - 3 total) - The role of the moved piece.
+//! - `starting_square` (27th-22nd bits - 6 total) - The starting square of the move.
+//! - `captured_role` (21st-19th bits - 3 total) - The role of the captured piece. 7 for En-Passant.
+//! - `ending_square` (18th-13th bits - 6 total) - The ending square of the move, or the rook's square if it's a castling.
+//! - `promoted_role` (12th-10th bits - 3 total) - The role of the promoted piece. 6 and 7 for castling (King and Queen side, respectively).
+//! - `is_check` (9th bit - 1 total) - Whether it's check or not.
+//! - `is_checkmate` (8th bit - 1 total) - Whether it's checkmate or not.
+//! - `nag` (7th-0th bits - 8 total) - The value of the nag.
 
 use pgn_reader::Nag;
 use shakmaty::{
@@ -134,15 +134,15 @@ impl MoveDescriptor {
     }
 
     /// Generates a u32 representation of the value. It is structured in the following manner:
-    /// `player` (31st bit - 1 total) - 0 for the black player, 1 for the white player.
-    /// `moved_role` (30th-28th bits - 3 total) - The role of the moved piece.
-    /// `starting_square` (27th-22nd bits - 6 total) - The starting square of the move.
-    /// `captured_role` (21st-19th bits - 3 total) - The role of the captured piece. 7 for En-Passant.
-    /// `ending_square` (18th-13th bits - 6 total) - The ending square of the move, or the rook's square if it's a castling.
-    /// `promoted_role` (12th-10th bits - 3 total) - The role of the promoted piece. 6 and 7 for castling (King and Queen side, respectively).
-    /// `is_check` (9th bit - 1 total) - Whether it's check or not.
-    /// `is_checkmate` (8th bit - 1 total) - Whether it's checkmate or not.
-    /// `nag` (7th-0th bits - 8 total) - The value of the nag.
+    /// - `player` (31st bit - 1 total) - 0 for the black player, 1 for the white player.
+    /// - `moved_role` (30th-28th bits - 3 total) - The role of the moved piece.
+    /// - `starting_square` (27th-22nd bits - 6 total) - The starting square of the move.
+    /// - `captured_role` (21st-19th bits - 3 total) - The role of the captured piece. 7 for En-Passant.
+    /// - `ending_square` (18th-13th bits - 6 total) - The ending square of the move, or the rook's square if it's a castling.
+    /// - `promoted_role` (12th-10th bits - 3 total) - The role of the promoted piece. 6 and 7 for castling (King and Queen side, respectively).
+    /// - `is_check` (9th bit - 1 total) - Whether it's check or not.
+    /// - `is_checkmate` (8th bit - 1 total) - Whether it's checkmate or not.
+    /// - `nag` (7th-0th bits - 8 total) - The value of the nag.
     pub const fn to_u32(&self) -> u32 {
         let r#move = match self.r#move {
             Normal {
