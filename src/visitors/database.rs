@@ -6,7 +6,7 @@ use pgn_reader::{Nag, RawComment, RawHeader, SanPlus, Visitor};
 use shakmaty::Outcome;
 
 use crate::{
-    db::{initialize_database_if_not_exists, insert_all},
+    database::{initialize_database_if_not_exists, insert_all},
     visitors::comment_iterator::CommentIterator,
 };
 use lichess::data::Data;
@@ -15,9 +15,9 @@ use lichess::data::Data;
 #[derive(Debug)]
 pub struct Database {
     /// Connection to the database.
-    db: Conn,
+    database_connection: Conn,
     /// Current data as it is being collected.
-    data: Data,
+    pub data: Data,
     /// Whether there were or not errors in the insertion to the database.
     pub has_errors: bool,
 }
@@ -26,7 +26,7 @@ impl Database {
     /// Creates a new database serializer from the password.
     pub fn new(db_password: &str) -> Result<Self, Error> {
         Ok(Self {
-            db: initialize_database_if_not_exists(db_password)?,
+            database_connection: initialize_database_if_not_exists(db_password)?,
             data: Data::default(),
             has_errors: false,
         })
@@ -60,7 +60,7 @@ impl Visitor for Database {
 
     fn end_game(&mut self) {
         self.data.end_game();
-        if let Err(e) = insert_all(&mut self.db, &self.data) {
+        if let Err(e) = insert_all(&mut self.database_connection, &self.data) {
             error!("{} - Insertion error: {}", self.data.games, e);
             self.has_errors = true;
         }
