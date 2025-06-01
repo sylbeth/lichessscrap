@@ -29,9 +29,9 @@ pub struct Database {
 
 impl Database {
     /// Creates a new database serializer from the password.
-    pub fn new(db_password: &str) -> Result<Self, Box<dyn Error>> {
+    pub fn new(db_url: &str) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
-            database_connection: initialize_database_if_not_exists(db_password)?,
+            database_connection: initialize_database_if_not_exists(db_url)?,
             data: Data::default(),
             has_errors: false,
         })

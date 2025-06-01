@@ -29,3 +29,6 @@ desktop.ini
 # Log files
 *.log
 *-log
+
+# Environment variables
+*.env

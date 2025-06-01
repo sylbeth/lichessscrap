@@ -1,4 +1,5 @@
 -l
 database.log
+-c
 -m
-sample
+100000

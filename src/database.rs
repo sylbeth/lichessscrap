@@ -21,7 +21,7 @@ pub use mysql::*;
 mod mysql {
     use log::{info, trace};
 
-    use mysql::{Conn, Error, OptsBuilder, prelude::Queryable};
+    use mysql::{Conn, Error, prelude::Queryable};
 
     use lichess::{
         attributes::{BoardConfiguration, Eco, Opening, Player, RuleSet},
@@ -32,12 +32,8 @@ mod mysql {
     ///
     /// # Errors
     /// Will return [`mysql::Error`] if the connection fails to start.
-    pub fn get_conn(db_password: &str) -> Result<Conn, Error> {
-        Conn::new(
-            OptsBuilder::new()
-                .user(Some("root"))
-                .pass(Some(db_password)),
-        )
+    pub fn get_conn(db_url: &str) -> Result<Conn, Error> {
+        Conn::new(db_url)
     }
 
     /// Creates and selects the lichess database.
@@ -132,10 +128,10 @@ mod mysql {
     /// # Errors
     /// Will return [`mysql::Error`] if the connection fails to start or the creation or selection fails.
     #[allow(dead_code)]
-    pub fn initialize_database(db_password: &str) -> Result<Conn, Error> {
+    pub fn initialize_database(db_url: &str) -> Result<Conn, Error> {
         trace!("initialize_database function.");
         info!("Initializing connection.");
-        let mut conn = get_conn(db_password)?;
+        let mut conn = get_conn(db_url)?;
         create_full_database(&mut conn)?;
         Ok(conn)
     }
@@ -144,10 +140,10 @@ mod mysql {
     ///
     /// # Errors
     /// Will return [`mysql::Error`] if the connection fails to start or the creation or selection fails.
-    pub fn initialize_database_if_not_exists(db_password: &str) -> Result<Conn, Error> {
+    pub fn initialize_database_if_not_exists(db_url: &str) -> Result<Conn, Error> {
         trace!("initialize_database_if_not_exists function.");
         info!("Initializing connection.");
-        let mut conn = get_conn(db_password)?;
+        let mut conn = get_conn(db_url)?;
         if conn.select_db("lichess").is_ok() {
             info!("Database already exists, proceeding.");
             return Ok(conn);
