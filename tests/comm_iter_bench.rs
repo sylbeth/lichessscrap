@@ -1,7 +1,5 @@
 //! Benchmark module for the usage of memchr.
 
-#![cfg(feature = "memchr")]
-
 use pretty_assertions::assert_eq;
 
 /// Auxiliary function to test a memchr based comment iterator.

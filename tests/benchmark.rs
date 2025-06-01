@@ -1,6 +1,5 @@
 //! Benchmark module for miscellaneous benches.
 
-#[cfg(feature = "memchr")]
 mod comm_iter_bench;
 #[cfg(feature = "csv")]
 mod csv_bench;

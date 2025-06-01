@@ -1,18 +1,17 @@
 //! Iterator for comments on moves of a PGN file.
 
+use std::iter::Zip;
+
+use memchr::{memchr_iter, Memchr};
+
 /// Iterator for comments on moves.
 pub struct CommentIterator<'c> {
     /// The comment to iterate over.
     comment: &'c [u8],
     /// A memchr iterator for spaces in the comment.
-    #[cfg(feature = "memchr")]
-    spaces: memchr::Memchr<'c>,
+    spaces: Memchr<'c>,
     /// A memchr iterator for brackets in the comment.
-    #[cfg(feature = "memchr")]
-    brackets: std::iter::Zip<memchr::Memchr<'c>, memchr::Memchr<'c>>,
-    /// A character iterator for the characters in the comment.
-    #[cfg(not(feature = "memchr"))]
-    characters: std::iter::Enumerate<std::slice::Iter<'c, u8>>,
+    brackets: Zip<Memchr<'c>, Memchr<'c>>,
 }
 
 impl<'c> CommentIterator<'c> {
@@ -20,12 +19,8 @@ impl<'c> CommentIterator<'c> {
     pub fn new(comment: &'c [u8]) -> Self {
         Self {
             comment,
-            #[cfg(feature = "memchr")]
-            spaces: memchr::memchr_iter(b' ', comment),
-            #[cfg(feature = "memchr")]
-            brackets: memchr::memchr_iter(b'[', comment).zip(memchr::memchr_iter(b']', comment)),
-            #[cfg(not(feature = "memchr"))]
-            characters: comment.iter().enumerate(),
+            spaces: memchr_iter(b' ', comment),
+            brackets: memchr_iter(b'[', comment).zip(memchr::memchr_iter(b']', comment)),
         }
     }
 }
@@ -33,27 +28,12 @@ impl<'c> CommentIterator<'c> {
 impl<'c> Iterator for CommentIterator<'c> {
     type Item = (&'c [u8], &'c [u8]);
 
-    #[cfg(feature = "memchr")]
     fn next(&mut self) -> Option<Self::Item> {
         if let Some((start, end)) = self.brackets.next() {
             while let Some(sep) = self.spaces.next() {
                 if (start..end).contains(&sep) {
                     return Some((&self.comment[start + 1..sep], &self.comment[sep + 1..end]));
                 }
-            }
-        }
-        None
-    }
-
-    #[cfg(not(feature = "memchr"))]
-    fn next(&mut self) -> Option<Self::Item> {
-        let (mut start, mut sep) = (0, 0);
-        while let Some((i, c)) = self.characters.next() {
-            match c {
-                b' ' => sep = i,
-                b'[' => start = i + 1,
-                b']' => return Some((&self.comment[start..sep], &self.comment[sep + 1..i])),
-                _ => (),
             }
         }
         None

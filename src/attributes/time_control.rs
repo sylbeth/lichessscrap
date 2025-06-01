@@ -2,6 +2,8 @@
 
 use std::{fmt::Display, str::from_utf8};
 
+use memchr::memchr;
+
 use super::error::AttributeParsingError;
 
 /// The time control used in a Lichess game.
@@ -10,20 +12,8 @@ pub struct TimeControl(pub Option<(u16, u8)>);
 
 impl TimeControl {
     /// Finds the time control separator in a time control bytes slice.
-    #[cfg(not(feature = "memchr"))]
     fn find_sep(time_control: &[u8]) -> Option<usize> {
-        for (i, c) in time_control.iter().enumerate() {
-            if *c == b'+' {
-                return Some(i);
-            }
-        }
-        None
-    }
-
-    /// Finds the time control separator in a time control bytes slice.
-    #[cfg(feature = "memchr")]
-    fn find_sep(time_control: &[u8]) -> Option<usize> {
-        memchr::memchr(b'+', time_control)
+        memchr(b'+', time_control)
     }
 
     /// Tries to parse a `&str` as a [`TimeControl`].
