@@ -1,7 +1,8 @@
 //! A visitor that inserts the elements of a PGN file to the database.
 
+use std::error::Error;
+
 use log::{error, info};
-use mysql::{Conn, Error};
 use pgn_reader::{Nag, RawComment, RawHeader, SanPlus, Visitor};
 use shakmaty::Outcome;
 
@@ -11,10 +12,14 @@ use crate::{
 };
 use lichess::data::Data;
 
+#[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+use mysql::Conn;
+
 /// A visitor that inserts the elements of a PGN file to the database.
 #[derive(Debug)]
 pub struct Database {
     /// Connection to the database.
+    #[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
     database_connection: Conn,
     /// Current data as it is being collected.
     pub data: Data,
@@ -24,7 +29,7 @@ pub struct Database {
 
 impl Database {
     /// Creates a new database serializer from the password.
-    pub fn new(db_password: &str) -> Result<Self, Error> {
+    pub fn new(db_password: &str) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
             database_connection: initialize_database_if_not_exists(db_password)?,
             data: Data::default(),

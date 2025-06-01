@@ -1,9 +1,11 @@
 //! Specification and parsing of an Title rating from a Lichess player.
 
 use deranged::RangedU8;
-use mysql::prelude::FromValue;
 
 use super::super::error::AttributeParsingError;
+
+#[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+use mysql::prelude::FromValue;
 
 /// All possible [`Title`]s, ensuring the format is exhaustive.
 const ALL_TITLES: [&str; 16] = [
@@ -77,7 +79,11 @@ const MN_STR: &str = "MN";
 /// UTF-8 string slice representing the M title.
 const M_STR: &str = "M";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, FromValue)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(
+    any(feature = "time-mysql", feature = "chrono-mysql"),
+    derive(FromValue)
+)]
 #[repr(u8)]
 pub enum Title {
     BOT = 1,

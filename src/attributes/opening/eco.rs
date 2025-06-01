@@ -3,12 +3,18 @@
 use std::{fmt::Display, str::from_utf8};
 
 use deranged::RangedU8;
-use mysql::prelude::FromValue;
 
 use super::super::error::AttributeParsingError;
 
+#[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+use mysql::prelude::FromValue;
+
 /// Character at the start of an Eco code.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, FromValue)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(
+    any(feature = "time-mysql", feature = "chrono-mysql"),
+    derive(FromValue)
+)]
 #[repr(u8)]
 pub enum EcoChar {
     #[default]

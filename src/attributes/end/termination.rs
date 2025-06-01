@@ -1,9 +1,11 @@
 //! Termination of a Lichess game. Can be any way a game can end.
 
 use deranged::RangedU8;
-use mysql::prelude::FromValue;
 
 use super::super::error::AttributeParsingError;
+
+#[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+use mysql::prelude::FromValue;
 
 /// All possible [`Termination`]s, ensuring the format is exhaustive.
 const ALL_TERMINATIONS: [&str; 5] = [
@@ -37,7 +39,11 @@ const ABANDONED_STR: &str = "Abandoned";
 const UNTERMINATED_STR: &str = "Unterminated";
 
 /// Termination of a Lichess game.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, FromValue)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(
+    any(feature = "time-mysql", feature = "chrono-mysql"),
+    derive(FromValue)
+)]
 #[repr(u8)]
 pub enum Termination {
     /// A null termination.

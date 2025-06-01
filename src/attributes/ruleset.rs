@@ -2,11 +2,12 @@
 
 use std::{fmt::Display, str::from_utf8};
 
-use mysql::{Params, params, prelude::FromValue};
-
 use crate::{attribute_err, attribute_fmt};
 
 use super::error::AttributeParsingError;
+
+#[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+use mysql::{Params, params, prelude::FromValue};
 
 /// A Lichess game's ruleset.
 #[derive(Debug, Default, Clone)]
@@ -77,6 +78,7 @@ impl RuleSet {
         self.fill_str(from_utf8(value).map_err(|_| ERROR)?)
     }
 
+    #[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
     /// Prepares the parameters for MySQL insertion of this data.
     pub fn as_insert_params(&self) -> Params {
         params! {
@@ -86,6 +88,7 @@ impl RuleSet {
         }
     }
 
+    #[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
     /// Prepares the parameters for MySQL selection of this data.
     pub fn as_select_params(&self) -> Params {
         params! {
@@ -96,7 +99,11 @@ impl RuleSet {
 }
 
 /// The kind of RuleSet.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, FromValue)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(
+    any(feature = "time-mysql", feature = "chrono-mysql"),
+    derive(FromValue)
+)]
 #[repr(u8)]
 pub enum RuleSetKind {
     /// A normal game.

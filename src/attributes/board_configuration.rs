@@ -1,11 +1,13 @@
 //! Represents a board configuration in a Lichess game. It holds the number of pieces left for each color and the board position.
 
-use mysql::{Params, params};
 use shakmaty::{Board, Role};
 
 use crate::{attribute_err, attribute_fmt};
 
 use super::error::ValuedAttributeParsingError;
+
+#[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+use mysql::{Params, params};
 
 /// Data used for each role for codifing the number of pieces left.
 const ROLE_DATA: [(u16, usize, Role); 5] = [
@@ -110,6 +112,7 @@ impl BoardConfiguration {
         }
     }
 
+    #[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
     /// Prepares the parameters for MySQL insertion and selection of this data.
     pub fn as_params(&self) -> Params {
         params! {

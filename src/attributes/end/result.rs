@@ -1,10 +1,12 @@
 //! Result of a Lichess game. Can be a win for each of the sides, a tie or none.
 
 use deranged::RangedU8;
-use mysql::prelude::FromValue;
 use shakmaty::{Color, Outcome};
 
 use super::super::error::AttributeParsingError;
+
+#[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+use mysql::prelude::FromValue;
 
 /// All possible [`Result`]s, ensuring the format is exhaustive.
 const ALL_RESULTS: [&str; 4] = [WHITE_WIN_STR, BLACK_WIN_STR, TIE_STR, NULL_STR];
@@ -28,7 +30,11 @@ const TIE_STR: &str = "1/2-1/2";
 const NULL_STR: &str = "*";
 
 /// Result of a Lichess game.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, FromValue)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(
+    any(feature = "time-mysql", feature = "chrono-mysql"),
+    derive(FromValue)
+)]
 #[repr(u8)]
 pub enum Result {
     /// A null result.

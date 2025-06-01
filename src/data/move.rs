@@ -1,8 +1,9 @@
 //! The entire information a Lichess game's move provides. It can be cleared up for reusability purposes.
 
-use mysql::{Params, params};
-
 use crate::attributes::{Clk, Eval, MoveDescriptor};
+
+#[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+use mysql::{Params, params};
 
 /// Struct containing all the information of a Lichess game's move.
 #[derive(Debug, Default, Clone)]
@@ -31,6 +32,7 @@ impl Move {
         self.clk = None;
     }
 
+    #[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
     /// Prepares the parameters for MySQL insertion of this data.
     pub fn as_params(&self, game_id: u64) -> Params {
         let (eval_float, eval_int) = match self.eval {
