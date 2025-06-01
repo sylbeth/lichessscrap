@@ -25,6 +25,7 @@ pub struct Stats {
 
 impl Stats {
     /// Logs the PGN files stats.
+    #[allow(dead_code)]
     pub fn log(&self) {
         info!("File stats");
         info!("Games: {}", self.games);

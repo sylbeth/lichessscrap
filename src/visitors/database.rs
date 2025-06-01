@@ -65,10 +65,10 @@ impl Visitor for Database {
 
     fn end_game(&mut self) {
         self.data.end_game();
-        if let Err(e) = insert_all(&mut self.database_connection, &self.data) {
+        /*if let Err(e) = insert_all(&mut self.database_connection, &self.data) {
             error!("{} - Insertion error: {}", self.data.games, e);
             self.has_errors = true;
-        }
+        }*/
         self.data.new_game();
         if self.data.games % 1000 == 0 {
             info!("Inserted data of {} games.", self.data.games);

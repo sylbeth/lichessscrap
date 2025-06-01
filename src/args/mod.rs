@@ -54,10 +54,10 @@ pub struct ConsistencyArgs {
     #[arg(short, long)]
     pub check: bool,
     /// Whether or not to print data found while checking.
-    #[arg(short, long)]
+    #[arg(short, long, conflicts_with = "sample")]
     pub print_collect: bool,
     /// File to write the data found while checking.
-    #[arg(short, long)]
+    #[arg(short, long, conflicts_with = "sample")]
     pub write_collect: Option<PathBuf>,
 }
 
