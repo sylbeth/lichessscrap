@@ -105,6 +105,18 @@ mod mysql {
         conn.query_drop(include_str!("sql/create-ruleset.sql"))
     }
 
+    /// Creates the views of the database: MoveDescriptor, PiecesLeft and FinalBoard.
+    ///
+    /// # Errors
+    /// Will return [`mysql::Error`] if any of the creations fails.
+    pub fn create_views(conn: &mut Conn) -> Result<(), Error> {
+        trace!("create_views function.");
+        info!("Creating views.");
+        conn.query_drop(include_str!("sql/view-descriptor.sql"))?;
+        conn.query_drop(include_str!("sql/view-finalboard.sql"))?;
+        conn.query_drop(include_str!("sql/view-piecesleft.sql"))
+    }
+
     /// Creates the lichess database, selects it and creates all its tables.
     ///
     /// # Errors
@@ -119,6 +131,7 @@ mod mysql {
         create_ruleset(conn)?;
         create_game(conn)?;
         create_move(conn)?;
+        create_views(conn)?;
         info!("Database created correctly.");
         Ok(())
     }
