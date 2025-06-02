@@ -99,6 +99,7 @@ fn sample_crawling(args: CLIArgs, sample: usize) -> Result<(), Box<dyn Error>> {
     trace!("sample_crawling function.");
     info!("Commencing crawling of the file wile analyzing only a sample.");
 
+    let db_url = env::var("DATABASE_URL").map_err(|_| io::Error::new(io::ErrorKind::NotFound, "The database url was not found. Please provide the environment variable DATABASE_URL as mysql://user:password@localhost, for example, through a .env file."))?;
     let games = if let Some(games) = args.database.games {
         games
     } else {
@@ -120,51 +121,6 @@ fn sample_crawling(args: CLIArgs, sample: usize) -> Result<(), Box<dyn Error>> {
                     &args.pgn_file,
                 );
                 info!("Starting the insertion of the sample.");
-                if let Ok(db_url) = env::var("DATABASE_URL") {
-                    let mut database = Database::new(&db_url)?;
-                    let mut cursor;
-                    if args.consistency.check {
-                        let mut checker = Checker::default();
-                        while sampler.fill_next_game()? {
-                            cursor = BufferedReader::new_cursor(&sampler.current_data);
-                            cursor.read_game(&mut checker)?;
-                            if checker.has_errors & !args.database.force_insert {
-                                info!(
-                                    "Since there were errors during the check, the program will stop."
-                                );
-                                info!(
-                                    "If this is not the intended behaviour, consider using the flag \"-f\"/\"--force-insert\"."
-                                );
-                                return Err("There were errors during the check process.".into());
-                            }
-                            cursor = BufferedReader::new_cursor(&sampler.current_data);
-                            cursor.read_game(&mut database)?;
-                        }
-                    } else {
-                        while sampler.fill_next_game()? {
-                            cursor = BufferedReader::new_cursor(&sampler.current_data);
-                            cursor.read_game(&mut database)?;
-                        }
-                    }
-                    info!("Finished processing the sample.");
-                    Ok(())
-                } else {
-                    Err(Box::new(io::Error::new(
-                        io::ErrorKind::NotFound,
-                        "The database url was not found. Please provide the environment variable DATABASE_URL as mysql://user:password@localhost, for example, through a .env file.",
-                    )))
-                }
-            }
-            #[cfg(not(feature = "zstd"))]
-            Err(Box::new(io::Error::new(
-                io::ErrorKind::Unsupported,
-                "The feature zstd must be active to be able to read a zstd file",
-            )))
-        } else if ext == "pgn" {
-            let mut sampler =
-                PGNSampler::new(File::open(&args.pgn_file)?, sample, games, &args.pgn_file);
-            info!("Starting the insertion of the sample.");
-            if let Ok(db_url) = env::var("DATABASE_URL") {
                 let mut database = Database::new(&db_url)?;
                 let mut cursor;
                 if args.consistency.check {
@@ -192,12 +148,41 @@ fn sample_crawling(args: CLIArgs, sample: usize) -> Result<(), Box<dyn Error>> {
                 }
                 info!("Finished processing the sample.");
                 Ok(())
-            } else {
-                Err(Box::new(io::Error::new(
-                    io::ErrorKind::NotFound,
-                    "The database url was not found. Please provide the environment variable DATABASE_URL as mysql://user:password@localhost, for example, through a .env file.",
-                )))
             }
+            #[cfg(not(feature = "zstd"))]
+            Err(Box::new(io::Error::new(
+                io::ErrorKind::Unsupported,
+                "The feature zstd must be active to be able to read a zstd file",
+            )))
+        } else if ext == "pgn" {
+            let mut sampler =
+                PGNSampler::new(File::open(&args.pgn_file)?, sample, games, &args.pgn_file);
+            info!("Starting the insertion of the sample.");
+            let mut database = Database::new(&db_url)?;
+            let mut cursor;
+            if args.consistency.check {
+                let mut checker = Checker::default();
+                while sampler.fill_next_game()? {
+                    cursor = BufferedReader::new_cursor(&sampler.current_data);
+                    cursor.read_game(&mut checker)?;
+                    if checker.has_errors & !args.database.force_insert {
+                        info!("Since there were errors during the check, the program will stop.");
+                        info!(
+                            "If this is not the intended behaviour, consider using the flag \"-f\"/\"--force-insert\"."
+                        );
+                        return Err("There were errors during the check process.".into());
+                    }
+                    cursor = BufferedReader::new_cursor(&sampler.current_data);
+                    cursor.read_game(&mut database)?;
+                }
+            } else {
+                while sampler.fill_next_game()? {
+                    cursor = BufferedReader::new_cursor(&sampler.current_data);
+                    cursor.read_game(&mut database)?;
+                }
+            }
+            info!("Finished processing the sample.");
+            Ok(())
         } else {
             Err(Box::new(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -249,9 +234,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         info!("Reading dotenv.");
         if dotenv().is_ok() {
-            info!("dotenv file not found, proceeding with checking.");
-        } else {
             info!("dotenv file read.");
+        } else {
+            info!("dotenv file not found, proceeding with checking.");
         }
     }
 
