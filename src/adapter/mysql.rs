@@ -9,9 +9,15 @@ use lichess::{
     data::{Data, Game, Move},
 };
 
+use crate::adapter::DatabaseConnection;
+
 use super::{Connection, DatabaseAdapter};
 
-impl DatabaseAdapter for Connection {
+struct InnerConnection {
+    pub conn: Conn,
+}
+
+impl DatabaseConnection for InnerConnection {
     type Error = mysql::Error;
 
     fn create_final_configuration(&mut self) -> Result<&mut Self, Self::Error> {
@@ -87,8 +93,17 @@ impl DatabaseAdapter for Connection {
         info!("Database created correctly.");
         Ok(self)
     }
+}
 
-    fn initialize_database(db_url: &str, rebuild: bool, max_threads: NonZeroUsize) -> Result<Self, Self::Error> {
+impl DatabaseAdapter for Connection {
+    type Error = mysql::Error;
+    type PoolConn = PooledConn;
+
+    fn initialize_database(
+        db_url: &str,
+        rebuild: bool,
+        max_threads: NonZeroUsize,
+    ) -> Result<Self, Self::Error> {
         trace!("Connection initialize_database function.");
         info!("Initializing connection.");
         let mut conn = Conn::new(db_url)?;
@@ -97,28 +112,25 @@ impl DatabaseAdapter for Connection {
         } else if conn.select_db("lichess").is_ok() {
             info!("Database already exists, proceeding.");
             return Ok(Self {
-                conn,
                 pool: Pool::new::<&str, _>(&[db_url, "/lichess"].concat())?,
                 threads: VecDeque::new(),
-                max_threads
+                max_threads,
             });
         } else {
             info!("Database doesn't exist, creating.");
         }
         conn.query_drop(include_str!("../sql/create-database.sql"))?;
         conn.select_db("lichess")?;
-        let mut connection = Self {
-            conn,
+        InnerConnection { conn }.create_full_database()?;
+        Ok(Self {
             pool: Pool::new::<&str, _>(&[db_url, "/lichess"].concat())?,
             threads: VecDeque::new(),
-            max_threads
-        };
-        connection.create_full_database()?;
-        Ok(connection)
+            max_threads,
+        })
     }
 
     fn insert_final_configuration(
-        conn: &mut PooledConn,
+        conn: &mut Self::PoolConn,
         final_configuration: &BoardConfiguration,
     ) -> Result<u64, Self::Error> {
         let params = final_configuration.as_params();
@@ -145,7 +157,7 @@ impl DatabaseAdapter for Connection {
     }
 
     fn insert_opening(
-        conn: &mut PooledConn,
+        conn: &mut Self::PoolConn,
         opening: &Opening,
         eco: Eco,
     ) -> Result<u64, Self::Error> {
@@ -182,7 +194,7 @@ impl DatabaseAdapter for Connection {
         ))
     }
 
-    fn insert_player(conn: &mut PooledConn, player: &Player) -> Result<u64, Self::Error> {
+    fn insert_player(conn: &mut Self::PoolConn, player: &Player) -> Result<u64, Self::Error> {
         let params = player.as_params();
         match conn.exec_iter(include_str!("../sql/insert-player.sql"), &params) {
             Ok(result) => {
@@ -209,7 +221,7 @@ impl DatabaseAdapter for Connection {
         ))
     }
 
-    fn insert_ruleset(conn: &mut PooledConn, ruleset: &RuleSet) -> Result<u64, Self::Error> {
+    fn insert_ruleset(conn: &mut Self::PoolConn, ruleset: &RuleSet) -> Result<u64, Self::Error> {
         match conn.exec_iter(
             include_str!("../sql/insert-ruleset.sql"),
             ruleset.as_insert_params(),
@@ -244,7 +256,7 @@ impl DatabaseAdapter for Connection {
     }
 
     fn insert_game(
-        conn: &mut PooledConn,
+        conn: &mut Self::PoolConn,
         game: &Game,
         ruleset_id: u64,
         opening_id: Option<u64>,
@@ -261,7 +273,7 @@ impl DatabaseAdapter for Connection {
             .expect("The query is a game insertion query and thus must return an insert id."))
     }
 
-    fn insert_game_data(conn: &mut PooledConn, game: &Game) -> Result<u64, Self::Error> {
+    fn insert_game_data(conn: &mut Self::PoolConn, game: &Game) -> Result<u64, Self::Error> {
         let ruleset_id = Self::insert_ruleset(conn, &game.ruleset)?;
         let opening_id = if game.opening.0.is_empty() {
             None
@@ -284,7 +296,11 @@ impl DatabaseAdapter for Connection {
         )
     }
 
-    fn insert_move(conn: &mut PooledConn, r#move: &Move, game_id: u64) -> Result<(), Self::Error> {
+    fn insert_move(
+        conn: &mut Self::PoolConn,
+        r#move: &Move,
+        game_id: u64,
+    ) -> Result<(), Self::Error> {
         conn.exec_drop(
             include_str!("../sql/insert-move.sql"),
             r#move.as_params(game_id),
@@ -293,7 +309,7 @@ impl DatabaseAdapter for Connection {
     }
 
     fn insert_moves(
-        conn: &mut PooledConn,
+        conn: &mut Self::PoolConn,
         moves: &[Move],
         game_id: u64,
     ) -> Result<(), Self::Error> {
