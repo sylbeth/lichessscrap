@@ -1,26 +1,20 @@
 //! A visitor that inserts the elements of a PGN file to the database.
 
-use std::error::Error;
-
 use log::{error, info};
 use pgn_reader::{Nag, RawComment, RawHeader, SanPlus, Visitor};
 use shakmaty::Outcome;
 
 use crate::{
-    database::{initialize_database_if_not_exists, insert_all},
+    adapter::{Connection, DatabaseAdapter},
     visitors::comment_iterator::CommentIterator,
 };
 use lichess::data::Data;
-
-#[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
-use mysql::Conn;
 
 /// A visitor that inserts the elements of a PGN file to the database.
 #[derive(Debug)]
 pub struct Database {
     /// Connection to the database.
-    #[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
-    database_connection: Conn,
+    database_connection: Connection,
     /// Current data as it is being collected.
     pub data: Data,
     /// Whether there were or not errors in the insertion to the database.
@@ -29,9 +23,9 @@ pub struct Database {
 
 impl Database {
     /// Creates a new database serializer from the password.
-    pub fn new(db_url: &str) -> Result<Self, Box<dyn Error>> {
+    pub fn new(db_url: &str) -> Result<Self, <Connection as DatabaseAdapter>::Error> {
         Ok(Self {
-            database_connection: initialize_database_if_not_exists(db_url)?,
+            database_connection: Connection::new(db_url)?,
             data: Data::default(),
             has_errors: false,
         })
@@ -65,7 +59,7 @@ impl Visitor for Database {
 
     fn end_game(&mut self) {
         self.data.end_game();
-        if let Err(e) = insert_all(&mut self.database_connection, &self.data) {
+        if let Err(e) = self.database_connection.insert_all(&self.data) {
             error!("{} - Insertion error: {}", self.data.games, e);
             self.has_errors = true;
         }

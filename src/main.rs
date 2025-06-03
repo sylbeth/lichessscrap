@@ -20,8 +20,8 @@ use crate::{
     visitors::database::Database,
 };
 
+mod adapter;
 mod args;
-mod database;
 mod reader;
 mod visitors;
 
