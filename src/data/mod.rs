@@ -15,9 +15,9 @@ use super::{
     constants::{
         comments::{CLK, EVAL},
         headers::{
-            BLACK, BLACK_ELO, BLACK_RATING_DIFF, BLACK_TITLE, DATE, ECO, EVENT, OPENING, RESULT,
-            ROUND, SITE, TERMINATION, TIME_CONTROL, UTC_DATE, UTC_TIME, WHITE, WHITE_ELO,
-            WHITE_RATING_DIFF, WHITE_TITLE,
+            BLACK, BLACK_ELO, BLACK_RATING_DIFF, BLACK_TITLE, DATE, ECO, EVENT, LICHESS_ID,
+            OPENING, RESULT, ROUND, SITE, TERMINATION, TIME_CONTROL, UTC_DATE, UTC_TIME, WHITE,
+            WHITE_ELO, WHITE_RATING_DIFF, WHITE_TITLE,
         },
     },
 };
@@ -113,6 +113,7 @@ impl Data {
     pub fn process_header(&mut self, key: &[u8], value: &[u8]) {
         match key {
             SITE => (),
+            LICHESS_ID => (),
             TIME_CONTROL => match TimeControl::try_from(value) {
                 Ok(value) => self.game.time_control = value,
                 Err(e) => {

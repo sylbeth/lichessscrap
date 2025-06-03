@@ -22,9 +22,9 @@ use lichess::{
     constants::{
         comments::{CLK, EVAL},
         headers::{
-            BLACK, BLACK_ELO, BLACK_RATING_DIFF, BLACK_TITLE, DATE, ECO, EVENT, OPENING, RESULT,
-            ROUND, SITE, TERMINATION, TIME_CONTROL, UTC_DATE, UTC_TIME, WHITE, WHITE_ELO,
-            WHITE_RATING_DIFF, WHITE_TITLE,
+            BLACK, BLACK_ELO, BLACK_RATING_DIFF, BLACK_TITLE, DATE, ECO, EVENT, LICHESS_ID,
+            OPENING, RESULT, ROUND, SITE, TERMINATION, TIME_CONTROL, UTC_DATE, UTC_TIME, WHITE,
+            WHITE_ELO, WHITE_RATING_DIFF, WHITE_TITLE,
         },
     },
     loneerror, nullerror, valuederror,
@@ -269,6 +269,17 @@ impl Checker {
                 if from_utf8(value).is_err() {
                     error!(
                         "{} - Site is not UTF-8: {} <- {:?}",
+                        self.games,
+                        String::from_utf8_lossy(key),
+                        key
+                    );
+                    self.has_errors = true;
+                }
+            }
+            LICHESS_ID => {
+                if from_utf8(value).is_err() {
+                    error!(
+                        "{} - LichessId is not UTF-8: {} <- {:?}",
                         self.games,
                         String::from_utf8_lossy(key),
                         key

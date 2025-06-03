@@ -3,6 +3,9 @@
 /// Website header of a game.
 pub const SITE: &[u8] = b"Site";
 
+/// Lichess ID.
+pub const LICHESS_ID: &[u8] = b"LichessId";
+
 /// Time control header of a game.
 pub const TIME_CONTROL: &[u8] = b"TimeControl";
 /// Result header of a game.
