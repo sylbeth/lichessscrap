@@ -1,6 +1,8 @@
 //! A visitor that inserts the elements of a PGN file to the database.
 
-use log::{error, info};
+use std::num::NonZeroUsize;
+
+use log::info;
 use pgn_reader::{Nag, RawComment, RawHeader, SanPlus, Visitor};
 use shakmaty::Outcome;
 
@@ -17,18 +19,23 @@ pub struct Database {
     database_connection: Connection,
     /// Current data as it is being collected.
     pub data: Data,
-    /// Whether there were or not errors in the insertion to the database.
-    pub has_errors: bool,
 }
 
 impl Database {
     /// Creates a new database serializer from the password.
-    pub fn new(db_url: &str, rebuild: bool) -> Result<Self, <Connection as DatabaseAdapter>::Error> {
+    pub fn new(
+        db_url: &str,
+        rebuild: bool,
+        max_threads: NonZeroUsize,
+    ) -> Result<Self, <Connection as DatabaseAdapter>::Error> {
         Ok(Self {
-            database_connection: Connection::initialize_database(db_url, rebuild)?,
+            database_connection: Connection::initialize_database(db_url, rebuild, max_threads)?,
             data: Data::default(),
-            has_errors: false,
         })
+    }
+
+    pub fn finish_insertion(self) -> () {
+        self.database_connection.finish_insertion();
     }
 }
 
@@ -59,10 +66,7 @@ impl Visitor for Database {
 
     fn end_game(&mut self) {
         self.data.end_game();
-        if let Err(e) = self.database_connection.insert_all(&self.data) {
-            error!("{} - Insertion error: {}", self.data.games, e);
-            self.has_errors = true;
-        }
+        self.database_connection.insert_all(&self.data);
         self.data.new_game();
         if self.data.games % 1000 == 0 {
             info!("Inserted data of {} games.", self.data.games);

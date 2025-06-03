@@ -2,4 +2,4 @@
 database.log
 -c
 -m
-1000
+100000

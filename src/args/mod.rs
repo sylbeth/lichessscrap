@@ -1,6 +1,6 @@
 //! CLI argument parser for the scrapper.
 
-use std::{error::Error, path::PathBuf};
+use std::{error::Error, num::NonZeroUsize, path::PathBuf};
 
 use ::log::{info, trace};
 use argfile::{PREFIX as FROMFILE_PREFIX, expand_args, parse_fromfile};
@@ -80,4 +80,7 @@ pub struct DatabaseArgs {
     /// Whether or not to continue even with errors.
     #[arg(short, long, requires = "check")]
     pub force_insert: bool,
+    /// To use a random sample of the file instead of using it all.
+    #[arg(short = 't', long = "insertion-threads", default_value_t = NonZeroUsize::new(100).unwrap())]
+    pub max_threads: NonZeroUsize,
 }

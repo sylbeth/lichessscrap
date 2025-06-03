@@ -14,6 +14,11 @@ compile_error!("The features of mysql and of diesel cannot be enabled at the sam
 )))]
 compile_error!("At least one of the features of mysql or of diesel must be enabled.");
 
+#[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+use std::num::NonZeroUsize;
+use std::{collections::VecDeque, thread::JoinHandle};
+
+use ::mysql::PooledConn;
 use lichess::{
     attributes::{BoardConfiguration, Eco, Opening, Player, RuleSet},
     data::{Data, Game, Move},
@@ -22,31 +27,28 @@ use lichess::{
 #[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
 mod mysql;
 
-#[cfg(any(feature = "time-diesel", feature = "chrono-diesel"))]
-mod diesel;
-
 /// An adapter for the MySQL database, holding a connection.
 #[derive(Debug)]
 pub struct Connection {
     /// The [`mysql`] [`Conn`](::mysql::Conn) to interact with the MySQL database.
     #[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
     conn: ::mysql::Conn,
+
+    /// The [`mysql`] [`Pool`](::mysql::Pool) to interact with the MySQL database.
+    #[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+    pool: ::mysql::Pool,
+
+    /// The double ended queue of threads for inserting into the database.
+    #[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+    threads: VecDeque<(usize, JoinHandle<Result<(), ::mysql::Error>>)>,
+
+    /// The maximum number of insertion threads.
+    #[cfg(any(feature = "time-mysql", feature = "chrono-mysql"))]
+    max_threads: NonZeroUsize,
 }
 
 pub trait DatabaseAdapter: Sized {
     type Error: std::error::Error;
-
-    /// Constructs a connection to MySQL.
-    ///
-    /// # Errors
-    /// Will return [`DatabaseAdapter::Error`] if the connection fails to start.
-    fn new(db_url: &str) -> Result<Self, Self::Error>;
-
-    /// Creates and selects the lichess database.
-    ///
-    /// # Errors
-    /// Will return [`DatabaseAdapter::Error`] if the creation or selection fails.
-    fn create_db(&mut self) -> Result<&mut Self, Self::Error>;
 
     /// Creates the FinalConfiguration table of the database.
     ///
@@ -100,14 +102,18 @@ pub trait DatabaseAdapter: Sized {
     ///
     /// # Errors
     /// Will return [`DatabaseAdapter::Error`] if the connection fails to start or the creation or selection fails.
-    fn initialize_database(db_url: &str, rebuild: bool) -> Result<Self, Self::Error>;
+    fn initialize_database(
+        db_url: &str,
+        rebuild: bool,
+        max_threads: NonZeroUsize,
+    ) -> Result<Self, Self::Error>;
 
     /// Inserts a [`BoardConfiguration`] into the FinalConfiguration table.
     ///
     /// # Errors
     /// Will return [`DatabaseAdapter::Error`] if the insertion fails.
     fn insert_final_configuration(
-        &mut self,
+        conn: &mut PooledConn,
         final_configuration: &BoardConfiguration,
     ) -> Result<u64, Self::Error>;
 
@@ -115,26 +121,30 @@ pub trait DatabaseAdapter: Sized {
     ///
     /// # Errors
     /// Will return [`DatabaseAdapter::Error`] if the insertion fails.
-    fn insert_opening(&mut self, opening: &Opening, eco: Eco) -> Result<u64, Self::Error>;
+    fn insert_opening(
+        conn: &mut PooledConn,
+        opening: &Opening,
+        eco: Eco,
+    ) -> Result<u64, Self::Error>;
 
     /// Inserts a [`Player`] into the Player table.
     ///
     /// # Errors
     /// Will return [`DatabaseAdapter::Error`] if the insertion fails.
-    fn insert_player(&mut self, player: &Player) -> Result<u64, Self::Error>;
+    fn insert_player(conn: &mut PooledConn, player: &Player) -> Result<u64, Self::Error>;
 
     /// Inserts a [`RuleSet`] into the RuleSet table.
     ///
     /// # Errors
     /// Will return [`DatabaseAdapter::Error`] if the insertion fails.
-    fn insert_ruleset(&mut self, ruleset: &RuleSet) -> Result<u64, Self::Error>;
+    fn insert_ruleset(conn: &mut PooledConn, ruleset: &RuleSet) -> Result<u64, Self::Error>;
 
     /// Inserts a [`Game`] into the Game table.
     ///
     /// # Errors
     /// Will return [`DatabaseAdapter::Error`] if the insertion fails.
     fn insert_game(
-        &mut self,
+        conn: &mut PooledConn,
         game: &Game,
         ruleset_id: u64,
         opening_id: Option<u64>,
@@ -147,24 +157,25 @@ pub trait DatabaseAdapter: Sized {
     ///
     /// # Errors
     /// Will return [`DatabaseAdapter::Error`] if any of the insertions fail.
-    fn insert_game_data(&mut self, game: &Game) -> Result<u64, Self::Error>;
+    fn insert_game_data(conn: &mut PooledConn, game: &Game) -> Result<u64, Self::Error>;
 
     /// Inserts a [`Move`] into the Move table.
     ///
     /// # Errors
     /// Will return [`DatabaseAdapter::Error`] if the insertion fails.
     #[allow(dead_code)]
-    fn insert_move(&mut self, r#move: &Move, game_id: u64) -> Result<&mut Self, Self::Error>;
+    fn insert_move(conn: &mut PooledConn, r#move: &Move, game_id: u64) -> Result<(), Self::Error>;
 
     /// Inserts a [`Vec`] of [`Move`]s into the Move table.
     ///
     /// # Errors
     /// Will return [`DatabaseAdapter::Error`] if the insertion fails.
-    fn insert_moves(&mut self, moves: &[Move], game_id: u64) -> Result<&mut Self, Self::Error>;
+    fn insert_moves(conn: &mut PooledConn, moves: &[Move], game_id: u64)
+    -> Result<(), Self::Error>;
 
-    /// Inserts a [`Data`]'s [`Game`] and [`Vec`] of [`Move`]s into the Game, RuleSet, Opening, FinalConfiguration, Player and Move tables.
-    ///
-    /// # Errors
-    /// Will return [`DatabaseAdapter::Error`] if any of the insertions fail.
-    fn insert_all(&mut self, data: &Data) -> Result<&mut Self, Self::Error>;
+    /// Inserts a [`Data`]'s [`Game`] and [`Vec`] of [`Move`]s into the Game, RuleSet, Opening, FinalConfiguration, Player and Move tables using threads.
+    fn insert_all(&mut self, data: &Data) -> ();
+
+    /// Finishes the insertion of those threads that still haven't finished.
+    fn finish_insertion(self) -> ();
 }

@@ -78,15 +78,15 @@ fn full_crawling(args: CLIArgs) -> Result<(), Box<dyn Error>> {
     if let Ok(db_url) = env::var("DATABASE_URL") {
         info!("Inserting the full PGN file's data into the database.");
         let mut pgn = PGNReader::new(&args.pgn_file)?;
-        let mut db_serializer = Database::new(&db_url, args.database.rebuild)?;
-        pgn.read_all(&mut db_serializer)?;
-        if db_serializer.has_errors {
-            warn!("The database insertion finished with insertion errors.");
-        } else if db_serializer.data.has_errors {
+        let mut database =
+            Database::new(&db_url, args.database.rebuild, args.database.max_threads)?;
+        pgn.read_all(&mut database)?;
+        if database.data.has_errors {
             warn!("The database insertion finished with parsing errors.");
         } else {
             info!("The database insertion finished without errors.");
         }
+        database.finish_insertion();
     }
 
     info!("Full crawling finished.");
@@ -121,7 +121,8 @@ fn sample_crawling(args: CLIArgs, sample: usize) -> Result<(), Box<dyn Error>> {
                     &args.pgn_file,
                 );
                 info!("Starting the insertion of the sample.");
-                let mut database = Database::new(&db_url, args.database.rebuild)?;
+                let mut database =
+                    Database::new(&db_url, args.database.rebuild, args.database.max_threads)?;
                 let mut cursor;
                 if args.consistency.check {
                     let mut checker = Checker::default();
@@ -146,6 +147,7 @@ fn sample_crawling(args: CLIArgs, sample: usize) -> Result<(), Box<dyn Error>> {
                         cursor.read_game(&mut database)?;
                     }
                 }
+                database.finish_insertion();
                 info!("Finished processing the sample.");
                 Ok(())
             }
@@ -158,7 +160,8 @@ fn sample_crawling(args: CLIArgs, sample: usize) -> Result<(), Box<dyn Error>> {
             let mut sampler =
                 PGNSampler::new(File::open(&args.pgn_file)?, sample, games, &args.pgn_file);
             info!("Starting the insertion of the sample.");
-            let mut database = Database::new(&db_url, args.database.rebuild)?;
+            let mut database =
+                Database::new(&db_url, args.database.rebuild, args.database.max_threads)?;
             let mut cursor;
             if args.consistency.check {
                 let mut checker = Checker::default();
@@ -181,6 +184,7 @@ fn sample_crawling(args: CLIArgs, sample: usize) -> Result<(), Box<dyn Error>> {
                     cursor.read_game(&mut database)?;
                 }
             }
+            database.finish_insertion();
             info!("Finished processing the sample.");
             Ok(())
         } else {
