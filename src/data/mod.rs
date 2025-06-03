@@ -3,7 +3,7 @@
 pub use game::Game;
 pub use r#move::Move;
 
-use log::{error, info};
+use log::{error, info, warn};
 use pgn_reader::{Nag, SanPlus};
 use shakmaty::{Outcome, Position};
 
@@ -228,7 +228,7 @@ impl Data {
             Ok(value) => self.game.final_conf = value,
             Err((value, e)) => {
                 self.game.final_conf = value;
-                valuederror!(self, e);
+                warn!("{} - {}", self.games, e);
             }
         };
         if self.is_move_processed() {

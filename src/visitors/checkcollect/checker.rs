@@ -257,7 +257,7 @@ impl Checker {
         */
         #[cfg(feature = "full-check")]
         if let Err((_, e)) = BoardConfiguration::from_board(self.chess.board()) {
-            valuederror!(self, e);
+            log::warn!("{} - {}", self.games, e);
         };
     }
 

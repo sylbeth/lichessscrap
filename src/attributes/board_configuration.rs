@@ -6,6 +6,7 @@
 //! - `bishops` (8th-6th bits - 3 total) - Number of bishops left as a u3, it can fail if there are more than 7 bishops for one color.
 //! - `rooks` (5th-3rd bits - 3 total) - Number of rooks left as a u3, it can fail if there are more than 7 rooks for one color.
 //! - `queens` (2nd-0th bits - 3 total) - Number of queens left as a u3, it can fail if there are more than 7 queens for one color.
+//! If there is one of the 3 bit pieces that has more than 7, then the pawns number becomes 0xF minus (number of piece - 8), and the number of the piece over 8 becomes 7 minus the number of pawns, thus, actually making a valid format, even if a more complex one at that.
 //!
 //! # `row`
 //! - `square` ((0..32).step_by(4) bits - 4 total, 8 squares) - Codifies the piece in each square, in the following manner:
@@ -40,6 +41,7 @@ const ROLE_DATA: [(u16, usize, Role); 5] = [
 /// - `bishops` (8th-6th bits - 3 total) - Number of bishops left as a u3, it can fail if there are more than 7 bishops for one color.
 /// - `rooks` (5th-3rd bits - 3 total) - Number of rooks left as a u3, it can fail if there are more than 7 rooks for one color.
 /// - `queens` (2nd-0th bits - 3 total) - Number of queens left as a u3, it can fail if there are more than 7 queens for one color.
+/// If there is one of the 3 bit pieces that has more than 7, then the pawns number becomes 0xF minus (number of piece - 8), and the number of the piece over 8 becomes 7 minus the number of pawns, thus, actually making a valid format, even if a more complex one at that.
 ///
 /// # `row`
 /// - `square` ((0..32).step_by(4) bits - 4 total, 8 squares (0..3 being the 1st square, 28..31 being the 8th square)) - Codifies the piece in each square, in the following manner:
@@ -83,18 +85,22 @@ impl BoardConfiguration {
                 configuration.black_left |= (black_pieces as u16) << displacement;
             } else {
                 black_err = Some(format!(
-                    "The number of black {}s is {black_pieces}, when it should be at most {max}.",
+                    "The number of black {}s is {black_pieces}, when it should be at most {max}, so the alternate formatting is active.",
                     role.upper_char()
                 ));
+                configuration.black_left |= ((0xF - (black_pieces as u16 - 8)) << 12)
+                    | ((0x7 - pawn.intersect(black).count() as u16) << displacement);
             }
             let white_pieces = pieces.intersect(white).count();
             if white_pieces <= max {
                 configuration.white_left |= (white_pieces as u16) << displacement;
             } else {
                 white_err = Some(format!(
-                    "The number of white {}s is {white_pieces}, when it should be at most {max}.",
+                    "The number of white {}s is {white_pieces}, when it should be at most {max}, so the alternate formatting is active.",
                     role.upper_char()
                 ));
+                configuration.white_left |= ((0xF - (white_pieces as u16 - 8)) << 12)
+                    | ((0x7 - pawn.intersect(white).count() as u16) << displacement);
             }
         }
 
@@ -122,8 +128,6 @@ impl BoardConfiguration {
 
         match (black_err, white_err) {
             (Some(mut black_err), Some(white_err)) => {
-                configuration.black_left = u16::MAX;
-                configuration.white_left = u16::MAX;
                 black_err.push(' ');
                 black_err.push_str(&white_err);
                 Err((
@@ -131,20 +135,14 @@ impl BoardConfiguration {
                     ValuedAttributeParsingError::from_inner_utf8(ERROR, black_err),
                 ))
             }
-            (Some(black_err), None) => {
-                configuration.black_left = u16::MAX;
-                Err((
-                    configuration,
-                    ValuedAttributeParsingError::from_inner_utf8(ERROR, black_err),
-                ))
-            }
-            (None, Some(white_err)) => {
-                configuration.white_left = u16::MAX;
-                Err((
-                    configuration,
-                    ValuedAttributeParsingError::from_inner_utf8(ERROR, white_err),
-                ))
-            }
+            (Some(black_err), None) => Err((
+                configuration,
+                ValuedAttributeParsingError::from_inner_utf8(ERROR, black_err),
+            )),
+            (None, Some(white_err)) => Err((
+                configuration,
+                ValuedAttributeParsingError::from_inner_utf8(ERROR, white_err),
+            )),
             (None, None) => Ok(configuration),
         }
     }
