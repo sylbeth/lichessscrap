@@ -74,6 +74,9 @@ pub struct DatabaseArgs {
     /// To use a random sample of the file instead of using it all.
     #[arg(short = 'm', long = "sample-size")]
     pub sample: Option<usize>,
+    /// Whether to rebuild the database or only build it if it doesn't exist.
+    #[arg(short, long)]
+    pub rebuild: bool,
     /// Whether or not to continue even with errors.
     #[arg(short, long, requires = "check")]
     pub force_insert: bool,

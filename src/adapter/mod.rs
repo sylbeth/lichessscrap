@@ -96,17 +96,11 @@ pub trait DatabaseAdapter: Sized {
     /// Will return [`DatabaseAdapter::Error`] if the creation or selection fails.
     fn create_full_database(&mut self) -> Result<&mut Self, Self::Error>;
 
-    /// Gets a connection to MySQL, creates the lichess database, selects it and creates all its tables.
+    /// Gets a connection to MySQL, creates the lichess database and all its tables and selects it. It only rebuilds it if the database didn't already exist or rebuild is set to true.
     ///
     /// # Errors
     /// Will return [`DatabaseAdapter::Error`] if the connection fails to start or the creation or selection fails.
-    fn initialize_database(db_url: &str) -> Result<Self, Self::Error>;
-
-    /// Gets a connection to MySQL, creates the lichess database and all its tables if it doesn't exist and selects it.
-    ///
-    /// # Errors
-    /// Will return [`DatabaseAdapter::Error`] if the connection fails to start or the creation or selection fails.
-    fn initialize_database_if_not_exists(db_url: &str) -> Result<Self, Self::Error>;
+    fn initialize_database(db_url: &str, rebuild: bool) -> Result<Self, Self::Error>;
 
     /// Inserts a [`BoardConfiguration`] into the FinalConfiguration table.
     ///
@@ -159,6 +153,7 @@ pub trait DatabaseAdapter: Sized {
     ///
     /// # Errors
     /// Will return [`DatabaseAdapter::Error`] if the insertion fails.
+    #[allow(dead_code)]
     fn insert_move(&mut self, r#move: &Move, game_id: u64) -> Result<&mut Self, Self::Error>;
 
     /// Inserts a [`Vec`] of [`Move`]s into the Move table.

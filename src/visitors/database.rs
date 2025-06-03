@@ -23,9 +23,9 @@ pub struct Database {
 
 impl Database {
     /// Creates a new database serializer from the password.
-    pub fn new(db_url: &str) -> Result<Self, <Connection as DatabaseAdapter>::Error> {
+    pub fn new(db_url: &str, rebuild: bool) -> Result<Self, <Connection as DatabaseAdapter>::Error> {
         Ok(Self {
-            database_connection: Connection::new(db_url)?,
+            database_connection: Connection::initialize_database(db_url, rebuild)?,
             data: Data::default(),
             has_errors: false,
         })

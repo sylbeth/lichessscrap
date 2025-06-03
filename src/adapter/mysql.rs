@@ -104,23 +104,18 @@ impl DatabaseAdapter for Connection {
         Ok(self)
     }
 
-    fn initialize_database(db_url: &str) -> Result<Self, Self::Error> {
+    fn initialize_database(db_url: &str, rebuild: bool) -> Result<Self, Self::Error> {
         trace!("Connection initialize_database function.");
         info!("Initializing connection.");
         let mut connection = Self::new(db_url)?;
-        connection.create_full_database()?;
-        Ok(connection)
-    }
-
-    fn initialize_database_if_not_exists(db_url: &str) -> Result<Self, Self::Error> {
-        trace!("Connection initialize_database_if_not_exists function.");
-        info!("Initializing connection.");
-        let mut connection = Self::new(db_url)?;
-        if connection.conn.select_db("lichess").is_ok() {
+        if rebuild {
+            info!("Rebuilding database.");
+        } else if connection.conn.select_db("lichess").is_ok() {
             info!("Database already exists, proceeding.");
             return Ok(connection);
+        } else {
+            info!("Database doesn't exist, creating.");
         }
-        info!("Database doesn't exist, creating.");
         connection.create_full_database()?;
         Ok(connection)
     }

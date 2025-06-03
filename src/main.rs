@@ -78,7 +78,7 @@ fn full_crawling(args: CLIArgs) -> Result<(), Box<dyn Error>> {
     if let Ok(db_url) = env::var("DATABASE_URL") {
         info!("Inserting the full PGN file's data into the database.");
         let mut pgn = PGNReader::new(&args.pgn_file)?;
-        let mut db_serializer = Database::new(&db_url)?;
+        let mut db_serializer = Database::new(&db_url, args.database.rebuild)?;
         pgn.read_all(&mut db_serializer)?;
         if db_serializer.has_errors {
             warn!("The database insertion finished with insertion errors.");
@@ -121,7 +121,7 @@ fn sample_crawling(args: CLIArgs, sample: usize) -> Result<(), Box<dyn Error>> {
                     &args.pgn_file,
                 );
                 info!("Starting the insertion of the sample.");
-                let mut database = Database::new(&db_url)?;
+                let mut database = Database::new(&db_url, args.database.rebuild)?;
                 let mut cursor;
                 if args.consistency.check {
                     let mut checker = Checker::default();
@@ -158,7 +158,7 @@ fn sample_crawling(args: CLIArgs, sample: usize) -> Result<(), Box<dyn Error>> {
             let mut sampler =
                 PGNSampler::new(File::open(&args.pgn_file)?, sample, games, &args.pgn_file);
             info!("Starting the insertion of the sample.");
-            let mut database = Database::new(&db_url)?;
+            let mut database = Database::new(&db_url, args.database.rebuild)?;
             let mut cursor;
             if args.consistency.check {
                 let mut checker = Checker::default();
