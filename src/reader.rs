@@ -2,6 +2,7 @@
 
 use std::{
     any::type_name_of_val,
+    ffi::OsStr,
     fmt::Debug,
     fs::File,
     io::{self, BufRead, BufReader, Read},
@@ -16,6 +17,9 @@ use rand_seeder::{Seeder, SipRng};
 
 #[cfg(feature = "zstd")]
 use zstd::Decoder;
+
+/// Salt for the sampling.
+const SALT: &str = "ABCDEF";
 
 /// The buffered reader used for a PGN or ZSTD compressed PGN file.
 pub enum PGNReader {
@@ -253,7 +257,12 @@ impl<R: Read> PGNSampler<R> {
         trace!("PGNSampler new function.");
         info!("Creating the sampler.");
         let mut indices = sample::<SipRng>(
-            &mut Seeder::from(seed.file_name()).into_rng(),
+            &mut Seeder::from(
+                seed.file_name()
+                    .and_then(OsStr::to_str)
+                    .map(|file| [file, SALT].concat()),
+            )
+            .into_rng(),
             total_games,
             sample_size,
         )

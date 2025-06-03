@@ -83,7 +83,7 @@ impl RuleSet {
     pub fn as_insert_params(&self) -> Params {
         params! {
             "name" => &self.name,
-            "url_id" => (!self.url.is_empty()).then_some(&self.url),
+            "url_id" => &self.url,
             "kind" => self.kind,
         }
     }
@@ -93,7 +93,7 @@ impl RuleSet {
     pub fn as_select_params(&self) -> Params {
         params! {
             "name" => &self.name,
-            "url_id" => (!self.url.is_empty()).then_some(&self.url),
+            "url_id" => &self.url,
         }
     }
 }
