@@ -77,4 +77,5 @@ SELECT
 FROM game g
 JOIN piecesleft fp ON g.FCId = fp.FCId;
 
-
+SELECT *
+FROM final_type;

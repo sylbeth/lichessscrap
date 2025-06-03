@@ -1,5 +1,3 @@
-USE lichess;
-
 SELECT 
     DATE_FORMAT(g.DateTime, '%Y-%m') AS month,
     SUBSTRING_INDEX(o.name, ':', 1) AS opening_family,
